@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: creator
+      POSTGRES_PASSWORD: creator
+      POSTGRES_DB: creator
+    ports: ["5433:5432"]
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/02-deferrable-batch-fks.sql:/docker-entrypoint-initdb.d/02-deferrable-batch-fks.sql:ro
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
