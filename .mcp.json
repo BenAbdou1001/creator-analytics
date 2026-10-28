@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "creator-analytics": {
+      "command": "uv",
+      "args": ["run", "--directory", "backend", "creator-mcp"],
+      "env": { "DATABASE_URL": "postgresql://creator:creator@localhost:5433/creator" }
+    }
+  }
+}
