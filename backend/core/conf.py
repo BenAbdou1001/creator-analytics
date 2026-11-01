@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         # same URL psql/psycopg use; SQLAlchemy needs the driver named
         return self.DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
 
-    FASTAPI_TITLE: str = 'Creator Analytics API'
+    FASTAPI_TITLE: str = 'Tidemark API'
     FASTAPI_API_V1_PATH: str = '/api/v1'
 
     CORS_ORIGIN_REGEX: str = r'https?://(localhost|127\.0\.0\.1)(:\d+)?'

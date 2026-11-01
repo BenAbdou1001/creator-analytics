@@ -34,17 +34,9 @@ export interface ContentMetric {
   capturedAt: Date
 }
 
-export const CONTENT_SORTS = [
-  ['publishedAt', 'Newest'],
-  ['engagements', 'Most engagement'],
-  ['views', 'Most views'],
-  ['impressions', 'Most impressions'],
-  ['likes', 'Most likes'],
-  ['comments', 'Most comments'],
-  ['shares', 'Most shares'],
-] as const satisfies readonly (readonly [keyof ContentSummary, string])[]
+export const CONTENT_SORTS = ['publishedAt', 'engagements', 'views', 'impressions', 'likes', 'comments', 'shares'] as const
 
-export type ContentSort = (typeof CONTENT_SORTS)[number][0]
+export type ContentSort = (typeof CONTENT_SORTS)[number]
 
 export interface ContentSearch {
   accountId?: number
@@ -52,15 +44,17 @@ export interface ContentSearch {
   q?: string
   orderBy: ContentSort
   offset: number
+  post?: number
 }
 
 export function validateContentSearch(s: Record<string, unknown>): ContentSearch {
-  const orderBy = CONTENT_SORTS.find(([k]) => k === s.orderBy)?.[0] ?? 'publishedAt'
+  const orderBy = CONTENT_SORTS.find((k) => k === s.orderBy) ?? 'publishedAt'
   return {
     accountId: s.accountId ? Number(s.accountId) : undefined,
     contentType: (s.contentType as string) || undefined,
     q: (s.q as string) || undefined,
     orderBy,
     offset: Number(s.offset ?? 0),
+    post: s.post ? Number(s.post) : undefined,
   }
 }

@@ -1,8 +1,9 @@
-# Creator Analytics
+# Tidemark
 
-One place for your YouTube, TikTok, Instagram and LinkedIn numbers.
+Your numbers, kept after the platforms let them go. Tidemark holds one creator's YouTube, TikTok, Instagram and LinkedIn
+analytics, shows what each platform is about to delete, and records where every value came from.
 
-- `db/` – Postgres schema (your data model, unchanged) + migrations
+- `docs/brand/` – identity guide and plan
 - `backend/` – FastAPI REST API **and** the MCP server, layered like [fastapi-best-architecture](https://github.com/fastapi-practices/fastapi-best-architecture)
 - `web/` – TanStack Start + TanStack Query + shadcn/ui dashboard, feature-based
 
@@ -17,6 +18,8 @@ backend/
   common/response/           {"code", "msg", "data"} envelope: response_base.success(data=…)
   app/router.py              mounts every app module
   app/mcp_server.py          MCP tools; they call the same services as the REST API
+  alembic/                   schema, views and the seeded metric catalogue
+  scripts/seed_demo.py       invented multi-platform data, for a separate creator_demo database
   app/creator/
     api/v1/                  meta, tables, sync, imports, dashboard endpoints (thin)
     schema/                  pydantic request models
@@ -26,14 +29,14 @@ backend/
 
 web/src/
   routes/                    thin: search validation + loader + the feature's page component
-  features/<name>/           dashboard, accounts, content, imports, metrics, explorer
+  features/<name>/           dashboard, accounts, content, imports, metrics, explorer, audience, earnings
     api/                     keys.ts, service.ts, queries.ts (queryOptions), mutations.ts (hooks)
     components/              feature UI, exported through components/index.ts
     types/                   feature types (+ search-param validators)
     index.ts                 the feature's public API: import features only through it
   shared/
     components/ui/           shadcn/ui (add more with `npx shadcn@latest add <name>`)
-    components/common/       AppSidebar, DataTable, Pager, PageHeader, Field, Options…
+    components/common/       AppSidebar, DataTable, Sounding, PlatformBadge, Provenance, ConfirmDialog, EmptyState…
     lib/                     api-client.ts (the one fetch wrapper), tables.ts (generic table queries), format, nav, utils (cn)
     styles/globals.css       shadcn tokens + platform colours, light/dark
 ```
@@ -41,26 +44,32 @@ web/src/
 ## Run it
 
 ```bash
-docker compose up -d                                  # Postgres 17 on :5433, schema + seed metrics applied on first start
-cd backend && uv sync && uv run fastapi dev main.py --port 8000   # API docs: http://localhost:8000/docs
+docker compose up -d                                  # Postgres 17 on :5433
+cd backend && uv sync && uv run alembic upgrade head  # schema, views and the metric catalogue
+uv run fastapi dev main.py --port 8000                # API docs: http://localhost:8000/docs
 cd web && npm install && npm run dev                  # http://localhost:3000 (Vite picks the next free port if taken)
 ```
 
 Env: `DATABASE_URL` (backend, default `postgresql://creator:creator@localhost:5433/creator`),
 `VITE_API_URL` (web, default `http://localhost:8000`).
 
-Test (needs the database running): `cd backend && uv run pytest`
+Test (needs the database running): `cd backend && uv run pytest`. Tests use their own `creator_test` database and never
+touch real data.
+
+Demo data for judging the UI across all four platforms: see `backend/scripts/seed_demo.py`.
 
 ## Web app
 
 | Page | What it does |
 |---|---|
-| Dashboard | Totals, per-account cards, daily trend chart for any account metric, top content |
-| Content | All posts/videos across platforms, filter/sort/search, click a row for its latest metrics |
-| Accounts | Add / edit / delete your accounts |
-| Import | Upload a platform CSV export or LinkedIn analytics .xlsx; history of import batches |
-| Metric catalogue | Every dashboard metric, where to find it, and how long the platform keeps it |
-| Data explorer | Browse, create, edit and delete rows in any table; read any view |
+| Today | What expires next, one trend with the tide line and post markers, accounts, top posts |
+| Posts | Every post across platforms, sortable and searchable; a post opens in a linkable side sheet with its provenance |
+| Audience | Latest demographic breakdowns and people who left |
+| Earnings | Revenue by source and period, one list per currency |
+| Bring in data | Drop an export, see an exact dry run, then import; daily history held and import history |
+| Metrics | Every platform metric, how long the platform keeps it, where to export it |
+| Accounts | Add, edit and delete accounts |
+| Raw tables | Browse, create, edit and delete rows in any table; read any view |
 
 ### CSV import
 
@@ -71,7 +80,7 @@ Any other column is matched to `metric_definitions` by `metric_key` or by its GU
 
 ## MCP server
 
-Tools: `describe_schema`, `read_rows`, `create_rows`, `update_row`, `delete_row`, `sync_content`, `sync_account_metrics`, `sync_relationships`, `import_file`, `dashboard_overview`, `metric_timeseries`.
+Tools: `describe_schema`, `read_rows`, `create_rows`, `update_row`, `delete_row`, `sync_content`, `sync_account_metrics`, `sync_relationships`, `sync_revenue`, `import_file`, `dashboard_overview`, `metric_timeseries`, `expiring_metrics`.
 
 - **Claude Code**: `.mcp.json` in this folder registers it automatically. Start Claude Code here and approve the server.
 - **Claude Desktop**: add to `claude_desktop_config.json`:

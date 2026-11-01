@@ -5,9 +5,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.creator.utils.parse import parse_date as _date
-from app.creator.model import AccountMetricFact, BreakdownFact, ContentMetricFact, MetricDefinition
-
-
+from app.creator.model import AccountMetricFact, BreakdownFact, ContentMetricFact, MetricDefinition, RevenueFact
 
 
 class CRUDMetric:
@@ -49,6 +47,14 @@ class CRUDMetric:
         values['period_start'] = _date(values.get('period_start'))
         values['period_end'] = _date(values.get('period_end'))
         db.add(BreakdownFact(**values))
+
+    @staticmethod
+    async def add_revenue_fact(db: AsyncSession, account_id: int, metric_id: int, row: dict, batch_id: int) -> None:
+        start = _date(row['period_start'])
+        db.add(RevenueFact(account_id=account_id, metric_id=metric_id, revenue_source=row['revenue_source'],
+                           currency=row.get('currency'), period_kind=row.get('period_kind', 'month'),
+                           period_start=start, period_end=_date(row.get('period_end')) or start, value=row['value'],
+                           is_estimated=row.get('is_estimated', True), batch_id=batch_id))
 
 
 metric_dao = CRUDMetric()

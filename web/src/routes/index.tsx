@@ -1,9 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { topContentOptions } from '@/features/content'
-import { DashboardPage, overviewOptions } from '@/features/dashboard'
+import { DashboardPage, expiringOptions, overviewOptions, validateTodaySearch } from '@/features/dashboard'
+import { pageTitle } from '@/shared/lib/brand'
 
 export const Route = createFileRoute('/')({
+  head: () => pageTitle('Today'),
+  validateSearch: validateTodaySearch,
   loader: ({ context: { queryClient } }) =>
-    Promise.all([queryClient.ensureQueryData(overviewOptions), queryClient.ensureQueryData(topContentOptions)]),
+    Promise.all([
+      queryClient.ensureQueryData(overviewOptions),
+      queryClient.ensureQueryData(topContentOptions),
+      queryClient.ensureQueryData(expiringOptions),
+    ]),
   component: DashboardPage,
 })

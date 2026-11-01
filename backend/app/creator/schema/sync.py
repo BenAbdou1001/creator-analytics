@@ -22,6 +22,13 @@ class SyncAccountMetricsParam(SyncSourceParam):
     scope: str = 'account'
 
 
+class SyncRevenueParam(SyncSourceParam):
+    account_id: int
+    rows: list[dict[str, Any]] = Field(
+        description='{"metric", "revenue_source", "value", "period_start", "currency"?, "period_end"?, "period_kind"?, '
+                    '"is_estimated"?}')
+
+
 class SyncRelationshipsParam(SyncSourceParam):
     account_id: int
     relation: str
@@ -41,6 +48,10 @@ class SyncAccountMetricsResult(BaseModel):
     batch_id: int
     facts_inserted: int
     unknown_metrics: list[str]
+
+
+class SyncRevenueResult(SyncAccountMetricsResult):
+    pass
 
 
 class SyncRelationshipsResult(BaseModel):

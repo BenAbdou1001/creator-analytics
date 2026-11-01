@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountsRouteImport } from './routes/accounts'
+import { Route as AudienceRouteImport } from './routes/audience'
 import { Route as ContentRouteImport } from './routes/content'
 import { Route as DataRouteImport } from './routes/data'
+import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as MetricsRouteImport } from './routes/metrics'
 
@@ -26,6 +28,11 @@ const AccountsRoute = AccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AudienceRoute = AudienceRouteImport.update({
+  id: '/audience',
+  path: '/audience',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContentRoute = ContentRouteImport.update({
   id: '/content',
   path: '/content',
@@ -34,6 +41,11 @@ const ContentRoute = ContentRouteImport.update({
 const DataRoute = DataRouteImport.update({
   id: '/data',
   path: '/data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EarningsRoute = EarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImportRoute = ImportRouteImport.update({
@@ -50,16 +62,20 @@ const MetricsRoute = MetricsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
+  '/audience': typeof AudienceRoute
   '/content': typeof ContentRoute
   '/data': typeof DataRoute
+  '/earnings': typeof EarningsRoute
   '/import': typeof ImportRoute
   '/metrics': typeof MetricsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
+  '/audience': typeof AudienceRoute
   '/content': typeof ContentRoute
   '/data': typeof DataRoute
+  '/earnings': typeof EarningsRoute
   '/import': typeof ImportRoute
   '/metrics': typeof MetricsRoute
 }
@@ -67,22 +83,42 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
+  '/audience': typeof AudienceRoute
   '/content': typeof ContentRoute
   '/data': typeof DataRoute
+  '/earnings': typeof EarningsRoute
   '/import': typeof ImportRoute
   '/metrics': typeof MetricsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/accounts' | '/content' | '/data' | '/import' | '/metrics'
+  fullPaths:
+    | '/'
+    | '/accounts'
+    | '/audience'
+    | '/content'
+    | '/data'
+    | '/earnings'
+    | '/import'
+    | '/metrics'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/accounts' | '/content' | '/data' | '/import' | '/metrics'
+  to:
+    | '/'
+    | '/accounts'
+    | '/audience'
+    | '/content'
+    | '/data'
+    | '/earnings'
+    | '/import'
+    | '/metrics'
   id:
     | '__root__'
     | '/'
     | '/accounts'
+    | '/audience'
     | '/content'
     | '/data'
+    | '/earnings'
     | '/import'
     | '/metrics'
   fileRoutesById: FileRoutesById
@@ -90,8 +126,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountsRoute: typeof AccountsRoute
+  AudienceRoute: typeof AudienceRoute
   ContentRoute: typeof ContentRoute
   DataRoute: typeof DataRoute
+  EarningsRoute: typeof EarningsRoute
   ImportRoute: typeof ImportRoute
   MetricsRoute: typeof MetricsRoute
 }
@@ -112,6 +150,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audience': {
+      id: '/audience'
+      path: '/audience'
+      fullPath: '/audience'
+      preLoaderRoute: typeof AudienceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/content': {
       id: '/content'
       path: '/content'
@@ -124,6 +169,13 @@ declare module '@tanstack/react-router' {
       path: '/data'
       fullPath: '/data'
       preLoaderRoute: typeof DataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/earnings': {
+      id: '/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof EarningsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/import': {
@@ -146,8 +198,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountsRoute: AccountsRoute,
+  AudienceRoute: AudienceRoute,
   ContentRoute: ContentRoute,
   DataRoute: DataRoute,
+  EarningsRoute: EarningsRoute,
   ImportRoute: ImportRoute,
   MetricsRoute: MetricsRoute,
 }

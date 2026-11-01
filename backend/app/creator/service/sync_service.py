@@ -73,6 +73,26 @@ class SyncService:
                 unknown.add(r['metric'])
                 continue
             inserted += await metric_dao.add_account_fact(db, account_id, metric_id, r, batch_id)
+        return {'batch_id': batch_id, 'facts_inserted': inserted, 'unknown_metrics': sorted(unknown),
+                'range_start': min(starts, default=None), 'range_end': max(starts, default=None)}
+
+    @staticmethod
+    async def sync_revenue(*, db: AsyncSession, account_id: int, rows: list[dict], source_kind: str = 'gui_manual',
+                           source_label: str = 'manual sync') -> dict:
+        """Each row: {"metric": key or GUI label, "revenue_source": "ads", "value": n, "currency": "USD",
+        "period_start": date, "period_end": date (defaults to start), "period_kind": "month" (default),
+        "is_estimated": true (default)}."""
+        inserted, unknown = 0, set()
+        platform = await account_dao.get_platform(db, account_id)
+        metric_ids = await metric_dao.lookup(db, platform, 'revenue')
+        batch_id = await batch_dao.create(db, account_id, source_kind, source_label, row_count=len(rows))
+        for r in rows:
+            metric_id = metric_dao.resolve(metric_ids, r['metric'])
+            if metric_id is None:
+                unknown.add(r['metric'])
+                continue
+            await metric_dao.add_revenue_fact(db, account_id, metric_id, r, batch_id)
+            inserted += 1
         return {'batch_id': batch_id, 'facts_inserted': inserted, 'unknown_metrics': sorted(unknown)}
 
     @staticmethod

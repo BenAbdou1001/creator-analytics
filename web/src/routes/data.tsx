@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { ExplorerPage, explorerRowsOptions, validateExplorerSearch } from '@/features/explorer'
 import { schemaOptions } from '@/shared/lib/tables'
+import { pageTitle } from '@/shared/lib/brand'
 
 export const Route = createFileRoute('/data')({
+  head: () => pageTitle('Raw tables'),
   validateSearch: validateExplorerSearch,
   loaderDeps: ({ search }) => search,
   loader: ({ context: { queryClient }, deps }) =>

@@ -26,7 +26,8 @@ mcp = MCPServer(
         "`creator`). Call describe_schema first to learn tables, columns, primary keys and enum values. "
         "Metrics are long/narrow facts keyed by metric_definitions (platform, scope, metric_key); "
         "prefer the sync_* tools for bringing in dashboard data because they upsert, resolve metric "
-        "keys/labels and record provenance in import_batches. Views (v_*) are read-only."
+        "keys/labels and record provenance in import_batches. Views (v_*) are read-only. Platforms delete "
+        "their history: call expiring_metrics to see what must be exported next."
     ),
 )
 
@@ -159,6 +160,28 @@ async def metric_timeseries(account_id: int, metric_key: str, start: str | None 
         return await dashboard_service.timeseries(
             db=db, account_id=account_id, metric_key=metric_key, start=date.fromisoformat(start) if start else None,
             end=date.fromisoformat(end) if end else None, period_kind=period_kind)
+
+
+@mcp.tool()
+async def expiring_metrics() -> list[dict[str, Any]]:
+    """What each account has saved of the metrics its platform deletes, most urgent first.
+
+    saved_as: 'days' (daily history, with days_left until unsaved days start being lost; 0 or less means
+    they are being lost now), 'totals' (range totals only), 'nothing' (never saved). gui_path says where
+    to export it."""
+    async with transaction() as db:
+        return await dashboard_service.expiring(db=db)
+
+
+@mcp.tool()
+async def sync_revenue(account_id: int, rows: list[dict[str, Any]], source_kind: str = "gui_manual",
+                       source_label: str = "manual sync") -> dict[str, Any]:
+    """Record earnings. Each row: {"metric": key or GUI label, "revenue_source": "ads", "value": n,
+    "currency": "USD", "period_start": date, "period_end"?: date, "period_kind"?: "month",
+    "is_estimated"?: true}. Metric names are the platform's scope='revenue' catalogue entries."""
+    async with transaction() as db:
+        return await sync_service.sync_revenue(db=db, account_id=account_id, rows=rows, source_kind=source_kind,
+                                               source_label=source_label)
 
 
 def main():

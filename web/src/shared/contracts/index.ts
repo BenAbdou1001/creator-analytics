@@ -59,6 +59,22 @@ export interface MetricPointDto {
   period_end: string
   value: number
   captured_at: string
+  batch_id: number | null
+}
+
+export interface ExpiringMetricDto {
+  account_id: number
+  platform: Platform
+  handle: string
+  metric_key: string
+  label: string
+  gui_path: string | null
+  retention_days: number
+  first_day: string | null
+  last_day: string | null
+  days_saved: number
+  saved_as: 'days' | 'totals' | 'nothing'
+  days_left: number | null
 }
 
 export interface ContentSummaryDto {
@@ -116,6 +132,7 @@ export interface ImportBatchDto {
   source_kind: string
   source_label: string
   file_name: string | null
+  file_sha256: string | null
   row_count: number | null
   imported_at: string
 }
@@ -125,8 +142,46 @@ export interface ImportResultDto {
   content_upserted?: number
   facts_inserted?: number
   unknown_metrics?: string[]
+  range_start?: string | null
+  range_end?: string | null
   // LinkedIn .xlsx imports return one result per part
   account_metrics?: ImportResultDto
   content?: ImportResultDto | null
   demographic_rows?: number
+}
+
+export interface ImportPreviewDto {
+  kind: 'content' | 'account_metrics' | 'linkedin_xlsx'
+  already_imported_at: string | null
+  result: ImportResultDto
+}
+
+export interface BreakdownFactDto {
+  account_id: number
+  content_id: number | null
+  dimension: string
+  dimension_value: string
+  metric_id: number
+  value: number
+  captured_at: string
+}
+
+export interface InferredUnfollowDto {
+  account_id: number
+  platform: Platform
+  handle: string
+  display_name: string | null
+  relation: string
+  first_observed_at: string
+  ended_inferred_at: string
+}
+
+export interface RevenueFactDto {
+  account_id: number
+  revenue_source: string
+  currency: string | null
+  period_start: string
+  period_end: string
+  value: number
+  is_estimated: boolean
 }

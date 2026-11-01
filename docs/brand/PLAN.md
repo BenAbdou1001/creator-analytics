@@ -1,6 +1,6 @@
 # Brand and UI/UX identity plan
 
-Status: proposal, nothing implemented. Working name: **Tidemark** (not cleared, see Phase 0).
+Status: implemented on branch `brand-identity`; section 12 lists what was cut. Working name: **Tidemark** (not cleared).
 
 Evidence base: code reading of `web/`, `backend/` and the Alembic seed, then a readiness run on 2026-11-01 against the
 real database. Section 11 records what that run changed; where it conflicts with earlier sections, section 11 wins.
@@ -355,3 +355,22 @@ Must happen before Phase 1:
   so without a baseline no brand change can be reviewed or reverted.
 - Decide whether `unslop/` (3.9 MB, already installed as a skill) belongs in the repo. Recommended: remove it from the
   project or ignore it.
+
+## 12. Implementation notes, 2026-11-01
+
+Built: phases 0 to 6, with the section 11 changes. The approval gate in Phase 0 was skipped at the owner's request to
+implement everything. The identity guide is `GUIDE.md`.
+
+Added beyond the plan: `POST /imports/preview` runs the real import and rolls back, so preview numbers are exact.
+`sync_revenue` is the write path for Earnings.
+
+Cut or reduced:
+
+- Retention values were not re-checked against platform docs. This still needs doing, because Today's headline depends on them.
+- Expiry covers account-level metrics only. Post-level windows, such as Instagram's 730 days, are not tracked.
+- Earnings has no file import, only `sync_revenue`.
+- Retention curves, comments and messages have no UI. The tables are empty today.
+- Follower change on the accounts table, agent connection status in the footer and sticky table headers were dropped.
+- Exact values show on hover and to screen readers, not on keyboard focus, to avoid a tab stop in every cell.
+- Provenance is an inline line on the trend and the post sheet, not a popover on every value.
+- Sort is descending only.

@@ -1,9 +1,10 @@
-"""Integration check against the docker-compose Postgres: `uv run pytest`."""
+"""Integration check against a disposable database on the docker-compose Postgres (see conftest.py)."""
 
 import asyncio
 import json
 import uuid
 
+import pytest
 from fastapi.testclient import TestClient
 from mcp import Client
 
@@ -11,6 +12,7 @@ from main import app
 from app.mcp_server import mcp
 
 api = TestClient(app)
+pytestmark = pytest.mark.usefixtures('test_database')
 
 
 def test_end_to_end():
@@ -71,8 +73,28 @@ def test_end_to_end():
                      files={"file": ("content.csv", content)}).json()["data"]
         assert (s["content_upserted"], s["facts_inserted"]) == (1, 2), s
 
+        # preview gives exact counts and stores nothing; 'auto' tells the two CSV shapes apart
+        before = api.get("/api/v1/tables/import_batches", params={"account_id": acc}).json()["data"]["total"]
+        p = api.post("/api/v1/imports/preview", data={"account_id": acc},
+                     files={"file": ("chart.csv", chart)}).json()["data"]
+        assert p["kind"] == "account_metrics" and p["result"]["facts_inserted"] == 6 and p["already_imported_at"], p
+        assert api.get("/api/v1/tables/import_batches", params={"account_id": acc}).json()["data"]["total"] == before
+        assert api.post("/api/v1/imports/preview", data={"account_id": acc, "default_content_type": "video"},
+                        files={"file": ("content.csv", content)}).json()["data"]["kind"] == "content"
+        assert api.post("/api/v1/imports/preview", data={"account_id": acc},
+                        files={"file": ("x.csv", "a,b\n1,2\n")}).status_code == 400
+
+        s = api.post("/api/v1/sync/revenue", json={"account_id": acc, "rows": [
+            {"metric": "Estimated revenue", "revenue_source": "ads", "value": 12.5, "currency": "USD",
+             "period_start": "2026-09-01", "period_end": "2026-09-30"}, {"metric": "nope", "revenue_source": "ads",
+             "value": 1, "period_start": "2026-09-01"}]}).json()["data"]
+        assert (s["facts_inserted"], s["unknown_metrics"]) == (1, ["nope"]), s
+
         ov = next(o for o in api.get("/api/v1/dashboard/overview").json()["data"] if o["account_id"] == acc)
         assert ov["content_count"] == 2 and ov["total_views"] == 242
+
+        expiring = api.get("/api/v1/dashboard/expiring").json()["data"]
+        assert isinstance(expiring, list)
 
         # MCP tools, in-process
         async def via_mcp():

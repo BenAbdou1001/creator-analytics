@@ -1,83 +1,96 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '@fontsource-variable/hepta-slab';
+@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/spline-sans-mono';
+@import '@fontsource-variable/noto-sans-arabic';
 
 @custom-variant dark (&:is(.dark *));
 
+/* Tidemark tokens, named from chart printing. See docs/brand/GUIDE.md.
+   Components use the shadcn role names below, never hex values. */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  /* single-series chart colour + platform identity = fixed categorical slots (dataviz reference palette) */
-  --chart-1: #2a78d6;
-  --youtube: #e34948;
-  --tiktok: #1baf7a;
-  --instagram: #e87ba4;
-  --linkedin: #2a78d6;
+  --paper: #f2f6f5;
+  --surface: #fbfcfb;
+  --ink: #12282e;
+  --ink-2: #3f555b;
+  --ink-3: #5a6f74;
+  --shoal: #dcebee;
+  --deep: #1f5f73;
+  --overprint: #a3176a; /* only ever means "time is running out here" */
+  --danger: #b3261e;
+  --step: #e7eeed;
+  --sidebar: #e9f0ef;
+
+  /* fixed per platform, validated with dataviz/validate_palette.js --pairs all */
+  --youtube: #c8322b;
+  --tiktok: #0f8f7e;
+  --instagram: #b97f0f;
+  --linkedin: #2f6db8;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-  --chart-1: #3987e5;
-  --youtube: #e66767;
-  --tiktok: #199e70;
-  --instagram: #d55181;
-  --linkedin: #3987e5;
+  --paper: #0c181c;
+  --surface: #122227;
+  --ink: #e4ecea;
+  --ink-2: #a9baba;
+  --ink-3: #8a9ea0;
+  --shoal: #173640;
+  --deep: #7cc3d6;
+  --overprint: #f27dbc;
+  --danger: #f2857a;
+  --step: #1a2f35;
+  --sidebar: #0a1417;
+
+  --youtube: #cc3f3a;
+  --tiktok: #129c86;
+  --instagram: #b58e14;
+  --linkedin: #4a84dc;
+}
+
+:root,
+.dark {
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--step);
+  --secondary-foreground: var(--ink);
+  --muted: var(--step);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--step);
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --border: color-mix(in srgb, var(--ink) 12%, transparent);
+  --input: color-mix(in srgb, var(--ink) 22%, transparent);
+  --ring: var(--deep);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: var(--shoal);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--deep);
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 6px;
+  --radius-xl: 6px;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --font-weight-semibold: 500; /* the system has two weights, 400 and 500 */
+  --font-weight-bold: 500;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: 2.5rem;
+  --text-3xl--line-height: 3rem;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -96,7 +109,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -105,14 +117,58 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-ink-2: var(--ink-2);
+  --color-shoal: var(--shoal);
+  --color-deep: var(--deep);
+  --color-overprint: var(--overprint);
+  --font-sans: 'Schibsted Grotesk Variable', 'Noto Sans Arabic Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Hepta Slab Variable', ui-serif, Georgia, serif;
+  --font-mono: 'Spline Sans Mono Variable', ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  a,
+  button {
+    transition-duration: 120ms;
+  }
+  h1 {
+    font-family: var(--font-display);
+  }
+}
+
+/* The one orchestrated moment: the tide line drops once when a chart loads. */
+@keyframes tide-drop {
+  from {
+    transform: scaleY(0);
+  }
+}
+.tide-line {
+  transform-box: fill-box;
+  transform-origin: top;
+  animation: tide-drop 400ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

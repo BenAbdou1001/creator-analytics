@@ -7,6 +7,8 @@ from app.creator.schema.sync import (
     SyncContentResult,
     SyncRelationshipsParam,
     SyncRelationshipsResult,
+    SyncRevenueParam,
+    SyncRevenueResult,
 )
 from app.creator.service.sync_service import sync_service
 from common.response.response_schema import ResponseSchemaModel, response_base
@@ -24,6 +26,11 @@ async def sync_content(db: CurrentSessionTransaction, obj: SyncContentParam) -> 
 async def sync_account_metrics(db: CurrentSessionTransaction,
                                obj: SyncAccountMetricsParam) -> ResponseSchemaModel[SyncAccountMetricsResult]:
     return response_base.success(data=await sync_service.sync_account_metrics(db=db, **obj.model_dump()))
+
+
+@router.post('/revenue', summary='Record earnings')
+async def sync_revenue(db: CurrentSessionTransaction, obj: SyncRevenueParam) -> ResponseSchemaModel[SyncRevenueResult]:
+    return response_base.success(data=await sync_service.sync_revenue(db=db, **obj.model_dump()))
 
 
 @router.post('/relationships', summary='Sync a follower/subscriber/connection list')

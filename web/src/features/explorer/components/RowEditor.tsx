@@ -18,7 +18,7 @@ export function RowEditor({ table, meta, draft, onChange, onSave, onCancel, pend
   return (
     <Card className="mb-6">
       <CardContent>
-        <div className="mb-2 text-xs font-medium uppercase text-muted-foreground">
+        <div className="mb-2 text-sm font-medium">
           {draft.key ? `Edit ${table} ${JSON.stringify(draft.key)}` : `New ${table} row`}
         </div>
         <Textarea
