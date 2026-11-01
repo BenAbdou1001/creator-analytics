@@ -54,13 +54,29 @@ class CRUDDashboard:
                          period_kind: str) -> list[dict]:
         """Latest captured value per period for one account-level metric."""
         f = AccountMetricFact
-        stmt = (sa.select(f.period_start, f.period_end, f.value, f.captured_at)
+        stmt = (sa.select(f.period_start, f.period_end, f.value, f.captured_at, f.batch_id)
                 .ext(distinct_on(f.period_start, f.period_end))
                 .join(MetricDefinition, MetricDefinition.metric_id == f.metric_id)
                 .where(f.account_id == account_id, MetricDefinition.metric_key == metric_key,
                        f.period_kind == period_kind,
                        *([f.period_start >= start] if start else []), *([f.period_end <= end] if end else []))
                 .order_by(f.period_start, f.period_end, f.captured_at.desc()))
+        return [dict(r) for r in (await db.execute(stmt)).mappings()]
+
+    @staticmethod
+    async def saved_history(db: AsyncSession) -> list[dict]:
+        """For every account and every metric its platform eventually deletes: what we hold."""
+        a, m, f = Account, MetricDefinition, AccountMetricFact
+        daily = f.period_kind == 'day'
+        stmt = (sa.select(a.account_id, a.platform, a.handle, m.metric_key, m.label, m.gui_path, m.retention_days,
+                          sa.func.min(f.period_start).filter(daily).label('first_day'),
+                          sa.func.max(f.period_end).filter(daily).label('last_day'),
+                          sa.func.count(f.period_start.distinct()).filter(daily).label('days_saved'),
+                          sa.func.count(f.fact_id).label('facts'))
+                .join(m, m.platform == a.platform)
+                .outerjoin(f, sa.and_(f.account_id == a.account_id, f.metric_id == m.metric_id))
+                .where(m.scope == 'account', m.retention_days.is_not(None))
+                .group_by(a.account_id, m.metric_id))
         return [dict(r) for r in (await db.execute(stmt)).mappings()]
 
 

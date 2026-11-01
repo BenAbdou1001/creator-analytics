@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
+import { ConfirmDialog } from '@/shared/components/common/ConfirmDialog'
 import { DataTable } from '@/shared/components/common/DataTable'
 import { ErrorText } from '@/shared/components/common/ErrorText'
 import { Options } from '@/shared/components/common/Options'
@@ -27,6 +28,7 @@ export function ExplorerPage() {
   const meta = schema.tables[search.table]
   const writable = meta && !meta.view && meta.pk.length > 0
   const [draft, setDraft] = useState<RowDraft | null>(null)
+  const [deleting, setDeleting] = useState<Row | null>(null)
   const save = useSaveRow(search.table)
   const remove = useDeleteRow(search.table)
   const go = (p: Partial<ExplorerSearch>) => navigate({ search: (s) => ({ ...s, offset: 0, ...p }) })
@@ -36,7 +38,7 @@ export function ExplorerPage() {
 
   return (
     <>
-      <PageHeader title="Data explorer">
+      <PageHeader title="Raw tables" description="Everything as stored. Changes here take effect immediately, with no undo.">
         <NativeSelect
           aria-label="Table"
           value={search.table}
@@ -45,12 +47,12 @@ export function ExplorerPage() {
           <Options options={Object.entries(schema.tables).map(([name, t]) => [name, t.view ? `${name} (view)` : name] as const)} />
         </NativeSelect>
         <NativeSelect aria-label="Filter column" value={search.filter_col ?? ''} onChange={(e) => go({ filter_col: e.target.value || undefined })}>
-          <Options placeholder="Filter column…" options={meta?.columns.map((c) => c.name) ?? []} />
+          <Options placeholder="Filter by column" options={meta?.columns.map((c) => c.name) ?? []} />
         </NativeSelect>
         {search.filter_col && (
           <Input
             className="w-40"
-            placeholder="contains…"
+            aria-label="Filter value" placeholder="Contains"
             defaultValue={search.filter_val}
             onKeyDown={(e) => e.key === 'Enter' && go({ filter_val: e.currentTarget.value })}
           />
@@ -93,7 +95,7 @@ export function ExplorerPage() {
                       variant="ghost"
                       size="sm"
                       className="text-destructive"
-                      onClick={() => window.confirm('Delete this row?') && remove.mutate(keyOf(r))}
+                      onClick={() => setDeleting(r)}
                     >
                       Delete
                     </Button>
@@ -104,6 +106,18 @@ export function ExplorerPage() {
         />
         <Pager offset={search.offset} limit={EXPLORER_PAGE_SIZE} total={data?.total ?? 0} onChange={(offset) => go({ offset })} />
       </Card>
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Delete this row?"
+        action="Delete row"
+        onCancel={() => setDeleting(null)}
+        onConfirm={() => {
+          if (deleting) remove.mutate(keyOf(deleting))
+          setDeleting(null)
+        }}
+      >
+        Rows that depend on it may be deleted too. This cannot be undone.
+      </ConfirmDialog>
     </>
   )
 }

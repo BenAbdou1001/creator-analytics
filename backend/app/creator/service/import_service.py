@@ -6,6 +6,7 @@ import io
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.creator.crud.crud_batch import batch_dao
 from app.creator.service.linkedin_service import linkedin_service
 from app.creator.service.sync_service import sync_service
 from app.creator.utils.parse import num
@@ -23,13 +24,35 @@ _CONTENT_ALIASES = {
 _DATE_ALIASES = ['period_start', 'date', 'day']
 
 
+def detect_kind(data: bytes) -> str:
+    """'content' for one row per post, 'account_metrics' for one row per date, from the CSV header."""
+    headers = next(csv.reader(io.StringIO(data.decode('utf-8-sig'))), [])
+    low = {h.strip().lower() for h in headers}
+    if low & set(_CONTENT_ALIASES['external_id']):
+        return 'content'
+    if low & set(_DATE_ALIASES):
+        return 'account_metrics'
+    raise errors.RequestError(msg=f'This file has no post ID column and no date column. Columns found: {", ".join(headers)}')
+
+
 class ImportService:
+    async def preview(self, *, db: AsyncSession, account_id: int, kind: str, data: bytes, file_name: str | None = None,
+                      default_content_type: str | None = None, period_kind: str = 'day') -> dict:
+        """Runs the real import on `db`, then rolls back, so the numbers are exact and nothing is stored."""
+        file_kind = 'linkedin_xlsx' if data[:2] == b'PK' else detect_kind(data) if kind == 'auto' else kind
+        seen = await batch_dao.last_import_of(db, account_id, hashlib.sha256(data).hexdigest())
+        result = await self.import_file(db=db, account_id=account_id, kind=file_kind, data=data, file_name=file_name,
+                                        default_content_type=default_content_type, period_kind=period_kind)
+        await db.rollback()
+        return {'kind': file_kind, 'already_imported_at': seen, 'result': result}
+
     async def import_file(self, *, db: AsyncSession, account_id: int, kind: str, data: bytes,
                           file_name: str | None = None, default_content_type: str | None = None,
                           period_kind: str = 'day') -> dict:
         if data[:2] == b'PK':
             return await linkedin_service.import_xlsx(db=db, account_id=account_id, data=data, file_name=file_name)
-        return await self.import_csv(db=db, account_id=account_id, kind=kind, data=data, file_name=file_name,
+        return await self.import_csv(db=db, account_id=account_id, kind=detect_kind(data) if kind == 'auto' else kind,
+                                     data=data, file_name=file_name,
                                      default_content_type=default_content_type, period_kind=period_kind)
 
     @staticmethod

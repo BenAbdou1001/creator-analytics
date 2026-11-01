@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
 import { NativeSelect } from '@/shared/components/ui/native-select'
+import { humanOptions, platformOptions } from '@/shared/lib/format'
 import { schemaOptions } from '@/shared/lib/tables'
 import type { AccountInput } from '../types'
 
@@ -50,12 +51,12 @@ export function AccountForm({ value, onChange, editing, pending, error, onSubmit
         >
           <Field label="Platform">
             <NativeSelect className="w-full" value={value.platform} onChange={(e) => set('platform', e.target.value as AccountInput['platform'])}>
-              <Options options={schema.enums.platform_t} />
+              <Options options={platformOptions(schema.enums.platform_t)} />
             </NativeSelect>
           </Field>
           <Field label="Account type">
             <NativeSelect className="w-full" value={value.accountType} onChange={(e) => set('accountType', e.target.value)}>
-              <Options options={schema.enums.account_type_t} />
+              <Options options={humanOptions(schema.enums.account_type_t)} />
             </NativeSelect>
           </Field>
           {TEXT_FIELDS.map(([k, label]) => (
@@ -64,7 +65,7 @@ export function AccountForm({ value, onChange, editing, pending, error, onSubmit
             </Field>
           ))}
           <label className="flex items-center gap-2 self-end pb-2 text-sm">
-            <input type="checkbox" checked={value.isMonetized} onChange={(e) => set('isMonetized', e.target.checked)} />
+            <input type="checkbox" className="size-4 accent-(--deep)" checked={value.isMonetized} onChange={(e) => set('isMonetized', e.target.checked)} />
             Monetized
           </label>
           <div className="flex items-end gap-2">

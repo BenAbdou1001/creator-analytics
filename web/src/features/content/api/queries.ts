@@ -17,6 +17,27 @@ export const topContentOptions = queryOptions({
   select: mapPage(toContentSummary),
 })
 
+/** Publish dates of one account, for the markers on its trend chart. */
+export const postDatesOptions = (accountId: number) =>
+  queryOptions({
+    ...rowsOptions<ContentSummaryDto>('v_content_summary', { account_id: accountId, order_by: 'published_at', limit: 1000 }),
+    select: (page) =>
+      page.rows.flatMap((r) => (r.published_at ? [{ date: r.published_at.slice(0, 10), title: r.title }] : [])),
+  })
+
+export const contentSummaryOptions = (id: number) =>
+  queryOptions({
+    ...rowsOptions<ContentSummaryDto>('v_content_summary', { content_id: id }),
+    select: (page) => (page.rows[0] ? toContentSummary(page.rows[0]) : null),
+  })
+
+/** The import that last touched a post's numbers. */
+export const contentBatchOptions = (id: number) =>
+  queryOptions({
+    ...rowsOptions<{ batch_id: number | null }>('content_metric_facts', { content_id: id, order_by: 'captured_at', limit: 1 }),
+    select: (page) => page.rows[0]?.batch_id ?? null,
+  })
+
 export const contentItemOptions = (id: number) =>
   queryOptions({
     ...rowsOptions<ContentItemDto>('content_items', { content_id: id }),

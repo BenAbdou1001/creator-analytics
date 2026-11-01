@@ -14,13 +14,21 @@ export interface ImportResult {
   contentUpserted?: number
   factsInserted?: number
   unknownMetrics?: string[]
+  rangeStart?: string | null
+  rangeEnd?: string | null
   // LinkedIn .xlsx imports return one result per part
   accountMetrics?: ImportResult
   content?: ImportResult | null
   demographicRows?: number
 }
 
-export type ImportKind = 'content' | 'account_metrics'
+export type ImportKind = 'auto' | 'content' | 'account_metrics'
+
+export interface ImportPreview {
+  kind: 'content' | 'account_metrics' | 'linkedin_xlsx'
+  alreadyImportedAt: Date | null
+  result: ImportResult
+}
 
 export interface ImportInput {
   accountId: number

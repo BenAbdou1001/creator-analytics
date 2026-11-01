@@ -1,9 +1,11 @@
-import type { AccountOverviewDto, ApiResponse, MetricPointDto } from '@/shared/contracts'
+import type { AccountOverviewDto, ApiResponse, ExpiringMetricDto, MetricPointDto } from '@/shared/contracts'
 import { apiClient } from '@/shared/lib/api-client'
 import type { TimeseriesParams } from '../types'
 
 export const dashboardService = {
   overview: () => apiClient.get<ApiResponse<AccountOverviewDto[]>>('/dashboard/overview').then((res) => res.data.data),
+
+  expiring: () => apiClient.get<ApiResponse<ExpiringMetricDto[]>>('/dashboard/expiring').then((res) => res.data.data),
 
   timeseries: (p: TimeseriesParams) =>
     apiClient
