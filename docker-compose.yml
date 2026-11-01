@@ -7,8 +7,7 @@ services:
       POSTGRES_DB: creator
     ports: ["5433:5432"]
     volumes:
-      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./db/02-deferrable-batch-fks.sql:/docker-entrypoint-initdb.d/02-deferrable-batch-fks.sql:ro
       - pgdata:/var/lib/postgresql/data
+# Schema, views and the metric catalogue come from Alembic: cd backend && uv run alembic upgrade head
 volumes:
   pgdata:
