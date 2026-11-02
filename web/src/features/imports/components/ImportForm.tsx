@@ -58,7 +58,7 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
         <label
           className={cn(
             'flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-input px-5 py-8 text-sm transition-colors hover:bg-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring',
-            dragging && 'bg-shoal',
+            dragging && 'bg-accent',
           )}
           onDragOver={(e) => (e.preventDefault(), setDragging(true))}
           onDragLeave={() => setDragging(false)}
@@ -112,17 +112,17 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
         {preview.data && file && !done && (
           <div className="grid gap-1 rounded-md bg-muted px-4 py-3 text-sm">
             <p className="font-medium">{resultLine(preview.data.result, 'will be saved')}</p>
-            <p className="text-ink-2">
+            <p className="text-muted-foreground">
               {SHAPE[preview.data.kind]}
               {range?.rangeStart && `, ${prettyDay(range.rangeStart)} to ${prettyDay(range.rangeEnd ?? range.rangeStart)}`}
             </p>
             {unknown.length > 0 && (
-              <p className="text-ink-2">
+              <p className="text-muted-foreground">
                 {unknown.length} {unknown.length === 1 ? 'column' : 'columns'} not recognised and skipped: {unknown.join(', ')}
               </p>
             )}
             {preview.data.alreadyImportedAt && (
-              <p className="text-ink-2">
+              <p className="text-muted-foreground">
                 You imported this exact file on {prettyDay(preview.data.alreadyImportedAt)}. Importing it again adds a new snapshot.
               </p>
             )}

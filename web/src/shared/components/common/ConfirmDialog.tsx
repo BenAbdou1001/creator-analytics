@@ -32,7 +32,7 @@ export function ConfirmDialog({ open, title, children, action, typeToConfirm, on
           {typeToConfirm && (
             <label className="mt-4 grid gap-1.5 text-sm">
               <span>
-                Type <span className="font-mono">{typeToConfirm}</span> to confirm
+                Type <span className="tabular-nums">{typeToConfirm}</span> to confirm
               </span>
               <Input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" />
             </label>

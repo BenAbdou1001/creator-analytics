@@ -20,7 +20,7 @@ export function ImportsPage() {
   if (!accounts.length)
     return (
       <>
-        <PageHeader title="Bring in data" description={DESCRIPTION} />
+        <PageHeader title="Import" description={DESCRIPTION} />
         <Card className="py-0">
           <EmptyState
             title="Add an account first"
@@ -38,10 +38,10 @@ export function ImportsPage() {
   const accountId = picked ?? accounts[0].accountId
   return (
     <>
-      <PageHeader title="Bring in data" description={DESCRIPTION} />
+      <PageHeader title="Import" description={DESCRIPTION} />
       <ImportForm accounts={accounts} accountId={accountId} onAccount={setPicked} />
       <CoverageList accountId={accountId} />
-      <h2 className="mt-10 mb-3 text-sm font-medium">Recent imports</h2>
+      <h2 className="mt-10 mb-3 text-sm font-semibold">Recent imports</h2>
       <ImportHistory accounts={accounts} />
     </>
   )

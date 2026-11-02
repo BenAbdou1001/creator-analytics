@@ -1,9 +1,9 @@
-# Tidemark
+# Creator Analytics
 
-Your numbers, kept after the platforms let them go. Tidemark holds one creator's YouTube, TikTok, Instagram and LinkedIn
-analytics, shows what each platform is about to delete, and records where every value came from.
+One place for your YouTube, TikTok, Instagram and LinkedIn numbers, including what each platform is about to delete and
+where every value came from.
 
-- `docs/brand/` – identity guide and plan
+- `docs/brand/GUIDE.md` – UI style guide
 - `backend/` – FastAPI REST API **and** the MCP server, layered like [fastapi-best-architecture](https://github.com/fastapi-practices/fastapi-best-architecture)
 - `web/` – TanStack Start + TanStack Query + shadcn/ui dashboard, feature-based
 
@@ -62,14 +62,14 @@ Demo data for judging the UI across all four platforms: see `backend/scripts/see
 
 | Page | What it does |
 |---|---|
-| Today | What expires next, one trend with the tide line and post markers, accounts, top posts |
+| Dashboard | Totals, what expires soonest, performance chart with post markers, accounts, top posts |
 | Posts | Every post across platforms, sortable and searchable; a post opens in a linkable side sheet with its provenance |
 | Audience | Latest demographic breakdowns and people who left |
 | Earnings | Revenue by source and period, one list per currency |
-| Bring in data | Drop an export, see an exact dry run, then import; daily history held and import history |
+| Import | Drop an export, see an exact dry run, then import; daily history held and import history |
 | Metrics | Every platform metric, how long the platform keeps it, where to export it |
 | Accounts | Add, edit and delete accounts |
-| Raw tables | Browse, create, edit and delete rows in any table; read any view |
+| Data | Browse, create, edit and delete rows in any table; read any view |
 
 ### CSV import
 

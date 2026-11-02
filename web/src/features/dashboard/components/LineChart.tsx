@@ -3,12 +3,12 @@ import { prettyDay } from '@/shared/lib/format'
 import { Sounding } from '@/shared/components/common/Sounding'
 import type { Point } from '../types'
 
-const H = 260
+const H = 280
 const PAD = { top: 24, right: 12, bottom: 24, left: 48 }
 const DAY = 86_400_000
 const fmt = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
 const ms = (d: string) => Date.parse(`${d}T00:00:00Z`)
-const AXIS = { fontSize: 11, fill: 'var(--muted-foreground)', fontFamily: 'var(--font-mono)' }
+const AXIS = { fontSize: 11, fill: 'var(--muted-foreground)', fontFamily: 'var(--tabular-nums)' }
 
 function niceTicks(max: number, count = 4) {
   if (max <= 0) return [0, 1]
@@ -54,11 +54,16 @@ export function LineChart({ points, label, color, platform, retentionDays, posts
   const x = (t: number) => PAD.left + (t1 === t0 ? innerW / 2 : ((t - t0) / (t1 - t0)) * innerW)
   const y = (v: number) => PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH
   // a missing stretch stays a gap: the chart never draws a line through days nobody saved
-  const path = points
-    .map((p, i) => {
-      const gap = i > 0 && ms(p.periodStart) - ms(points[i - 1].periodEnd) > DAY
-      return `${i === 0 || gap ? 'M' : 'L'}${x(ms(p.periodStart))},${y(p.value)}`
-    })
+  const segments: Point[][] = []
+  points.forEach((p, i) => {
+    if (i === 0 || ms(p.periodStart) - ms(points[i - 1].periodEnd) > DAY) segments.push([])
+    segments[segments.length - 1].push(p)
+  })
+  const line = (seg: Point[]) => seg.map((p, i) => `${i ? 'L' : 'M'}${x(ms(p.periodStart))},${y(p.value)}`).join('')
+  const path = segments.map(line).join('')
+  const base = y(Math.max(0, yMin))
+  const area = segments
+    .map((seg) => `${line(seg)}L${x(ms(seg[seg.length - 1].periodStart))},${base}L${x(ms(seg[0].periodStart))},${base}Z`)
     .join('')
 
   const now = new Date()
@@ -106,9 +111,15 @@ export function LineChart({ points, label, color, platform, retentionDays, posts
             onBlur={() => setHover(null)}
             className="rounded-sm"
           >
-            {bandW > 0 && <rect x={PAD.left} y={PAD.top} width={bandW} height={innerH} fill="var(--shoal)" />}
+            <defs>
+              <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor={color} stopOpacity={0.45} />
+                <stop offset="1" stopColor={color} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            {bandW > 0 && <rect x={PAD.left} y={PAD.top} width={bandW} height={innerH} fill="var(--accent)" opacity={0.45} />}
             {bandW > 140 && (
-              <text x={PAD.left + bandW / 2} y={PAD.top + 16} textAnchor="middle" {...AXIS} fill="var(--ink-2)">
+              <text x={PAD.left + bandW / 2} y={PAD.top + 16} textAnchor="middle" {...AXIS} fill="var(--foreground)">
                 Only you have this
               </text>
             )}
@@ -126,13 +137,14 @@ export function LineChart({ points, label, color, platform, retentionDays, posts
               </text>
             ))}
             {inRange.map((p, i) => (
-              <rect key={i} x={x(ms(p.date)) - 1} y={PAD.top + innerH + 1} width={2} height={5} fill="var(--ink-3)" />
+              <rect key={i} x={x(ms(p.date)) - 1} y={PAD.top + innerH + 1} width={2} height={5} fill="var(--muted-foreground)" />
             ))}
+            <path d={area} fill="url(#chart-fill)" />
             <path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" />
             {lineShown && (
               <g>
-                <line className="tide-line" x1={x(tide)} x2={x(tide)} y1={PAD.top - 8} y2={PAD.top + innerH} stroke="var(--overprint)" strokeWidth={1.5} />
-                <text x={x(tide) + (tideLabelRight ? 6 : -6)} y={PAD.top - 10} textAnchor={tideLabelRight ? 'start' : 'end'} {...AXIS} fill="var(--overprint)">
+                <line className="limit-line" x1={x(tide)} x2={x(tide)} y1={PAD.top - 8} y2={PAD.top + innerH} stroke="var(--warning)" strokeWidth={1.5} strokeDasharray="4 4" />
+                <text x={x(tide) + (tideLabelRight ? 6 : -6)} y={PAD.top - 10} textAnchor={tideLabelRight ? 'start' : 'end'} {...AXIS} fill="var(--warning)">
                   {platform} keeps from here
                 </text>
               </g>
@@ -156,7 +168,7 @@ export function LineChart({ points, label, color, platform, retentionDays, posts
         )}
         {h && (
           <div
-            className="pointer-events-none absolute top-6 max-w-60 rounded-md border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm"
+            className="pointer-events-none absolute top-6 max-w-60 rounded-md border bg-muted px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm"
             style={{ left: Math.min(hx + 10, width - 240) }}
           >
             <Sounding value={h.value} full className="text-sm" />
@@ -181,7 +193,7 @@ export function LineChart({ points, label, color, platform, retentionDays, posts
         )}
         {inRange.length > 0 && (
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-0.5 bg-(--ink-3)" aria-hidden="true" />
+            <span className="h-2 w-0.5 bg-muted-foreground" aria-hidden="true" />
             Post published
           </span>
         )}

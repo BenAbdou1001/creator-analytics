@@ -38,7 +38,7 @@ export function ExplorerPage() {
 
   return (
     <>
-      <PageHeader title="Raw tables" description="Everything as stored. Changes here take effect immediately, with no undo.">
+      <PageHeader title="Data" description="Everything as stored. Changes here take effect immediately, with no undo.">
         <NativeSelect
           aria-label="Table"
           value={search.table}

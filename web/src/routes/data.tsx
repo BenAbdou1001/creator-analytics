@@ -4,7 +4,7 @@ import { schemaOptions } from '@/shared/lib/tables'
 import { pageTitle } from '@/shared/lib/brand'
 
 export const Route = createFileRoute('/data')({
-  head: () => pageTitle('Raw tables'),
+  head: () => pageTitle('Data'),
   validateSearch: validateExplorerSearch,
   loaderDeps: ({ search }) => search,
   loader: ({ context: { queryClient }, deps }) =>

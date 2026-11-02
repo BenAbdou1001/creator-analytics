@@ -38,7 +38,7 @@ export function ContentTable({ rows, search = { orderBy: 'publishedAt', offset: 
           ),
         },
         { key: 'contentType', label: 'Type', render: (r) => humanize(r.contentType) },
-        ...(compact ? [] : [{ key: 'publishedAt', label: 'Published', render: (r: ContentSummary) => <span className="font-mono">{prettyDay(r.publishedAt)}</span> }]),
+        ...(compact ? [] : [{ key: 'publishedAt', label: 'Published', render: (r: ContentSummary) => <span className="tabular-nums">{prettyDay(r.publishedAt)}</span> }]),
         ...shown.map((k) => ({
           key: k,
           label: humanize(k),

@@ -1,9 +1,9 @@
-/** The tide staff: a gauge with ticks, one long magenta tick at the mark. */
-export function BrandMark({ className = 'size-5' }: { className?: string }) {
+/** The product mark: a white rounded tile with rising violet bars. */
+export function BrandMark({ className = 'size-11' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 16 16" className={className} fill="none" aria-hidden="true">
-      <path d="M3 1v14M3 2.75h3M3 5.75h3M3 12.75h3" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M3 9h11" stroke="var(--overprint)" strokeWidth="2" />
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect width="32" height="32" rx="9" fill="#fff" />
+      <path d="M8 24v-6M16 24V13M24 24V8" stroke="#6556fb" strokeWidth="4.5" strokeLinecap="round" />
     </svg>
   )
 }

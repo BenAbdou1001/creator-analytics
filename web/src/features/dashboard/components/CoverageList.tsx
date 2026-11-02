@@ -16,11 +16,11 @@ function CoverageStrip({ metric: m }: { metric: ExpiringMetric }) {
   const right = Math.min(1, (ms(m.lastDay!) + DAY - start) / (end - start))
   return (
     <span
-      className="block h-2 rounded-sm bg-muted"
+      className="block h-2 rounded-full bg-muted"
       role="img"
       aria-label={`Saved from ${prettyDay(m.firstDay)} to ${prettyDay(m.lastDay)} of the last ${m.retentionDays} days`}
     >
-      <span className="block h-full rounded-sm bg-deep" style={{ marginLeft: `${left * 100}%`, width: `${Math.max(0, right - left) * 100}%` }} />
+      <span className="block h-full rounded-full bg-primary" style={{ marginLeft: `${left * 100}%`, width: `${Math.max(0, right - left) * 100}%` }} />
     </span>
   )
 }
@@ -32,8 +32,8 @@ export function CoverageList({ accountId }: { accountId?: number }) {
   if (!rows.length) return null
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-medium">Daily history you hold</h2>
-      <Card className="px-6 py-4">
+      <h2 className="mb-3 text-sm font-semibold">Daily history you hold</h2>
+      <Card className="p-5">
         <ul className="grid gap-3">
           {rows.map((m) => {
             const span = Math.round((ms(m.lastDay!) - ms(m.firstDay!)) / DAY) + 1

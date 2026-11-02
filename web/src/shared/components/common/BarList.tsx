@@ -14,8 +14,8 @@ export function BarList({ items, suffix }: { items: { label: string; value: numb
             <Sounding value={i.value} />
             {suffix}
           </span>
-          <span className="col-span-2 mt-0.5 h-1 rounded-sm bg-muted">
-            <span className="block h-full rounded-sm bg-deep" style={{ width: `${(i.value / max) * 100}%` }} />
+          <span className="col-span-2 mt-0.5 h-1.5 rounded-full bg-muted">
+            <span className="block h-full rounded-full bg-primary" style={{ width: `${(i.value / max) * 100}%` }} />
           </span>
         </li>
       ))}
