@@ -1,0 +1,11 @@
+{"brand":"Creator Analytics","tagline":"One place for your numbers",
+"brief":"A self-hosted home for one creator's YouTube, TikTok, Instagram and LinkedIn numbers. The old mark was a generic bars tile. The new one must read as the name, sit in a slim navy and violet interface, and hold at 16 px.",
+"adjectives":["exact","direct","personal","alive"],
+"criteria":"Success: ownable against bar-chart marks, readable at 16 px, works in one colour and on navy.",
+"mockups":["website","favicon-tab","app-icon","readme","terminal","social"],
+"nav":["Dashboard","Content","Audience"],"brand_color":"#6556FB","greyscale":false,"final":true,"round":2,"designer":"Creator Analytics",
+"concepts":[{"name":"One line","symbol":"../master/symbol.svg","lockup":"../master/horizontal.svg","stacked":"../master/stacked.svg",
+"symbol_on_tile":"../master/symbol-reversed.svg","lockup_on_dark":"../master/horizontal-reversed.svg","tile_color":"#6556FB",
+"idea":"One stroke writes the C, then spikes up into the A.",
+"rationale":["The spike is the shape of a creator's numbers: flat, then a sharp jump","Built from one arc and two lines at 60 and 75 degrees","A dedicated small cut keeps the C open at 16 px"]}],
+"recommendation":"One line, in violet on light and white on navy or violet."}
