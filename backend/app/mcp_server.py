@@ -1,14 +1,23 @@
 """MCP server: lets an AI assistant read, add, modify, sync and delete creator analytics data.
 
+Tools call the same services as the REST API (app/creator/service), so behaviour is identical.
+
 Run (stdio):  uv run --directory backend creator-mcp
 """
 
+from collections.abc import AsyncIterator
+from datetime import date
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
 from mcp.server.mcpserver import MCPServer
 
-from . import db
+from app.creator.service.dashboard_service import dashboard_service
+from app.creator.service.import_service import import_service
+from app.creator.service.sync_service import sync_service
+from app.creator.service.table_service import table_service
+from database.db import async_db_session
 
 mcp = MCPServer(
     "creator-analytics",
@@ -17,19 +26,27 @@ mcp = MCPServer(
         "`creator`). Call describe_schema first to learn tables, columns, primary keys and enum values. "
         "Metrics are long/narrow facts keyed by metric_definitions (platform, scope, metric_key); "
         "prefer the sync_* tools for bringing in dashboard data because they upsert, resolve metric "
-        "keys/labels and record provenance in import_batches. Views (v_*) are read-only."
+        "keys/labels and record provenance in import_batches. Views (v_*) are read-only. Platforms delete "
+        "their history: call expiring_metrics to see what must be exported next."
     ),
 )
+
+
+@asynccontextmanager
+async def transaction() -> AsyncIterator:
+    """Each tool call is one transaction, like one REST request."""
+    async with async_db_session.begin() as db:
+        yield db
 
 
 @mcp.tool()
 def describe_schema() -> dict[str, Any]:
     """All tables/views with columns, types, required flags, primary keys, plus every enum's allowed values."""
-    return db.schema()
+    return table_service.schema()
 
 
 @mcp.tool()
-def read_rows(table: str, filters: dict[str, Any] | None = None, limit: int = 50, offset: int = 0,
+async def read_rows(table: str, filters: dict[str, Any] | None = None, limit: int = 50, offset: int = 0,
               order_by: str | None = None, descending: bool = True) -> dict[str, Any]:
     """Read rows from a table or view (e.g. accounts, content_items, v_content_summary,
     metric_definitions, account_metric_facts, v_inferred_unfollows).
@@ -38,32 +55,37 @@ def read_rows(table: str, filters: dict[str, Any] | None = None, limit: int = 50
     eq, ne, gt, gte, lt, lte, like (case-insensitive substring), isnull (true/false).
     Returns {"rows": [...], "total": matching row count}.
     """
-    return db.list_rows(table, filters, limit, offset, order_by, descending)
+    async with transaction() as db:
+        return await table_service.list(db=db, table=table, filters=filters, limit=limit, offset=offset,
+                                        order_by=order_by, desc=descending)
 
 
 @mcp.tool()
-def create_rows(table: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+async def create_rows(table: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Insert one or more rows into a table in a single transaction; returns the inserted rows.
     Omit serial ids and defaulted columns. Enum/date/json values may be passed as plain strings/objects."""
-    return db.create_rows(table, rows)
+    async with transaction() as db:
+        return await table_service.create(db=db, table=table, rows=rows)
 
 
 @mcp.tool()
-def update_row(table: str, key: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
+async def update_row(table: str, key: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
     """Update one row. key must contain exactly the table's primary key columns
     (e.g. {"account_id": 3}, or {"content_id": 1, "tag_type": "hashtag", "value": "ai"})."""
-    return db.update_row(table, key, data)
+    async with transaction() as db:
+        return await table_service.update(db=db, table=table, key=key, data=data)
 
 
 @mcp.tool()
-def delete_row(table: str, key: dict[str, Any]) -> dict[str, Any]:
+async def delete_row(table: str, key: dict[str, Any]) -> dict[str, Any]:
     """Delete one row by its full primary key; returns the deleted row.
     Deleting an account cascades to its content, facts, batches and relationships."""
-    return db.delete_row(table, key)
+    async with transaction() as db:
+        return await table_service.delete(db=db, table=table, key=key)
 
 
 @mcp.tool()
-def sync_content(account_id: int, items: list[dict[str, Any]], full_snapshot: bool = False,
+async def sync_content(account_id: int, items: list[dict[str, Any]], full_snapshot: bool = False,
                  period_kind: str = "lifetime", default_content_type: str | None = None,
                  source_label: str = "AI assistant sync") -> dict[str, Any]:
     """Upsert posts/videos for an account and record a metrics snapshot for each.
@@ -74,12 +96,14 @@ def sync_content(account_id: int, items: list[dict[str, Any]], full_snapshot: bo
     Metric names may be metric_key or the GUI label from metric_definitions (scope=content).
     full_snapshot=True marks the account's content absent from items as deleted_observed_at.
     """
-    return db.sync_content(account_id, items, full_snapshot=full_snapshot, period_kind=period_kind,
-                           default_content_type=default_content_type, source_label=source_label)
+    async with transaction() as db:
+        return await sync_service.sync_content(db=db, account_id=account_id, items=items, full_snapshot=full_snapshot,
+                                               period_kind=period_kind, default_content_type=default_content_type,
+                                               source_label=source_label)
 
 
 @mcp.tool()
-def sync_account_metrics(account_id: int, rows: list[dict[str, Any]], scope: str = "account",
+async def sync_account_metrics(account_id: int, rows: list[dict[str, Any]], scope: str = "account",
                          source_label: str = "AI assistant sync") -> dict[str, Any]:
     """Record account-level metric values.
 
@@ -88,11 +112,13 @@ def sync_account_metrics(account_id: int, rows: list[dict[str, Any]], scope: str
     period_kind: day|week|month|year|range|lifetime|realtime|snapshot|first_24h.
     scope: account|live|audience (matches metric_definitions.scope).
     """
-    return db.sync_account_metrics(account_id, rows, scope=scope, source_label=source_label)
+    async with transaction() as db:
+        return await sync_service.sync_account_metrics(db=db, account_id=account_id, rows=rows, scope=scope,
+                                                       source_label=source_label)
 
 
 @mcp.tool()
-def sync_relationships(account_id: int, relation: str, people: list[dict[str, Any]],
+async def sync_relationships(account_id: int, relation: str, people: list[dict[str, Any]],
                        full_snapshot: bool = True, source_label: str = "AI assistant sync") -> dict[str, Any]:
     """Sync a follower/following/subscriber/connection list.
 
@@ -100,31 +126,62 @@ def sync_relationships(account_id: int, relation: str, people: list[dict[str, An
     With full_snapshot=True, people previously seen with this relation but missing now are
     flagged ended_inferred_at (see view v_inferred_unfollows).
     """
-    return db.sync_relationships(account_id, relation, people, full_snapshot=full_snapshot,
-                                 source_label=source_label)
+    async with transaction() as db:
+        return await sync_service.sync_relationships(db=db, account_id=account_id, relation=relation, people=people,
+                                                     full_snapshot=full_snapshot, source_label=source_label)
 
 
 @mcp.tool()
-def import_csv_file(account_id: int, path: str, kind: str, default_content_type: str | None = None,
-                    period_kind: str = "day") -> dict[str, Any]:
-    """Import a platform CSV export from a local file.
-    kind='content': one row per post (id column + metric columns, e.g. YouTube Content export).
-    kind='account_metrics': one row per date + metric columns (e.g. YouTube 'Export current view' chart data)."""
+async def import_file(account_id: int, path: str, kind: str = "content", default_content_type: str | None = None,
+                period_kind: str = "day") -> dict[str, Any]:
+    """Import a platform export from a local file.
+    LinkedIn: the .xlsx from Analytics > Export (daily impressions/engagements, followers, posts,
+    demographics) - kind is ignored. CSV files: kind='content' for one row per post (id column +
+    metric columns, e.g. YouTube Content export), kind='account_metrics' for one row per date."""
     p = Path(path).expanduser()
-    return db.import_csv(account_id, kind, p.read_bytes(), p.name, default_content_type, period_kind)
+    async with transaction() as db:
+        return await import_service.import_file(db=db, account_id=account_id, kind=kind, data=p.read_bytes(),
+                                                file_name=p.name, default_content_type=default_content_type,
+                                                period_kind=period_kind)
 
 
 @mcp.tool()
-def dashboard_overview() -> list[dict[str, Any]]:
+async def dashboard_overview() -> list[dict[str, Any]]:
     """Per-account headline numbers: followers, content count, total views, engagements, last import."""
-    return db.overview()
+    async with transaction() as db:
+        return await dashboard_service.overview(db=db)
 
 
 @mcp.tool()
-def metric_timeseries(account_id: int, metric_key: str, start: str | None = None, end: str | None = None,
+async def metric_timeseries(account_id: int, metric_key: str, start: str | None = None, end: str | None = None,
                       period_kind: str = "day") -> list[dict[str, Any]]:
     """Time series of one account-level metric (latest capture per period). Dates are YYYY-MM-DD."""
-    return db.timeseries(account_id, metric_key, start, end, period_kind)
+    async with transaction() as db:
+        return await dashboard_service.timeseries(
+            db=db, account_id=account_id, metric_key=metric_key, start=date.fromisoformat(start) if start else None,
+            end=date.fromisoformat(end) if end else None, period_kind=period_kind)
+
+
+@mcp.tool()
+async def expiring_metrics() -> list[dict[str, Any]]:
+    """What each account has saved of the metrics its platform deletes, most urgent first.
+
+    saved_as: 'days' (daily history, with days_left until unsaved days start being lost; 0 or less means
+    they are being lost now), 'totals' (range totals only), 'nothing' (never saved). gui_path says where
+    to export it."""
+    async with transaction() as db:
+        return await dashboard_service.expiring(db=db)
+
+
+@mcp.tool()
+async def sync_revenue(account_id: int, rows: list[dict[str, Any]], source_kind: str = "gui_manual",
+                       source_label: str = "manual sync") -> dict[str, Any]:
+    """Record earnings. Each row: {"metric": key or GUI label, "revenue_source": "ads", "value": n,
+    "currency": "USD", "period_start": date, "period_end"?: date, "period_kind"?: "month",
+    "is_estimated"?: true}. Metric names are the platform's scope='revenue' catalogue entries."""
+    async with transaction() as db:
+        return await sync_service.sync_revenue(db=db, account_id=account_id, rows=rows, source_kind=source_kind,
+                                               source_label=source_label)
 
 
 def main():

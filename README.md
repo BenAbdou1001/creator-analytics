@@ -1,34 +1,75 @@
 # Creator Analytics
 
-One place for your YouTube, TikTok, Instagram and LinkedIn numbers.
+One place for your YouTube, TikTok, Instagram and LinkedIn numbers, including what each platform is about to delete and
+where every value came from.
 
-- `db/` – Postgres schema (your data model, unchanged) + one migration
-- `backend/` – FastAPI REST API **and** the MCP server (same data layer, `app/db.py`)
-- `web/` – TanStack Start + TanStack Query dashboard
+- `docs/brand/GUIDE.md` – UI style guide
+- `backend/` – FastAPI REST API **and** the MCP server, layered like [fastapi-best-architecture](https://github.com/fastapi-practices/fastapi-best-architecture)
+- `web/` – TanStack Start + TanStack Query + shadcn/ui dashboard, feature-based
+
+## Project layout
+
+```
+backend/
+  main.py                    app = register_app()
+  core/                      conf.py (settings from env/.env), registrar.py (middleware, routers, exception handlers)
+  database/db.py             psycopg pool + db_transaction()
+  common/exception/          errors.py (NotFoundError, RequestError…), exception_handler.py
+  common/response/           {"code", "msg", "data"} envelope: response_base.success(data=…)
+  app/router.py              mounts every app module
+  app/mcp_server.py          MCP tools; they call the same services as the REST API
+  alembic/                   schema, views and the seeded metric catalogue
+  scripts/seed_demo.py       invented multi-platform data, for a separate creator_demo database
+  app/creator/
+    api/v1/                  meta, tables, sync, imports, dashboard endpoints (thin)
+    schema/                  pydantic request models
+    service/                 business logic + transactions (sync, import, LinkedIn .xlsx, dashboard, generic tables)
+    crud/                    SQL, one DAO per table/aggregate; crud_catalog drives generic CRUD from pg_catalog
+    utils/  tests/
+
+web/src/
+  routes/                    thin: search validation + loader + the feature's page component
+  features/<name>/           dashboard, accounts, content, imports, metrics, explorer, audience, earnings
+    api/                     keys.ts, service.ts, queries.ts (queryOptions), mutations.ts (hooks)
+    components/              feature UI, exported through components/index.ts
+    types/                   feature types (+ search-param validators)
+    index.ts                 the feature's public API: import features only through it
+  shared/
+    components/ui/           shadcn/ui (add more with `npx shadcn@latest add <name>`)
+    components/common/       AppSidebar, DataTable, Sounding, PlatformBadge, Provenance, ConfirmDialog, EmptyState…
+    lib/                     api-client.ts (the one fetch wrapper), tables.ts (generic table queries), format, nav, utils (cn)
+    styles/globals.css       shadcn tokens + platform colours, light/dark
+```
 
 ## Run it
 
 ```bash
-docker compose up -d                                  # Postgres 17 on :5433, schema + seed metrics applied on first start
-cd backend && uv sync && uv run fastapi dev app/main.py --port 8000   # API docs: http://localhost:8000/docs
+docker compose up -d                                  # Postgres 17 on :5433
+cd backend && uv sync && uv run alembic upgrade head  # schema, views and the metric catalogue
+uv run fastapi dev main.py --port 8000                # API docs: http://localhost:8000/docs
 cd web && npm install && npm run dev                  # http://localhost:3000 (Vite picks the next free port if taken)
 ```
 
 Env: `DATABASE_URL` (backend, default `postgresql://creator:creator@localhost:5433/creator`),
 `VITE_API_URL` (web, default `http://localhost:8000`).
 
-Test (needs the database running): `cd backend && uv run pytest`
+Test (needs the database running): `cd backend && uv run pytest`. Tests use their own `creator_test` database and never
+touch real data.
+
+Demo data for judging the UI across all four platforms: see `backend/scripts/seed_demo.py`.
 
 ## Web app
 
 | Page | What it does |
 |---|---|
-| Dashboard | Totals, per-account cards, daily trend chart for any account metric, top content |
-| Content | All posts/videos across platforms, filter/sort/search, click a row for its latest metrics |
-| Accounts | Add / edit / delete your accounts |
-| Import | Upload a platform CSV export; history of import batches |
-| Metric catalogue | Every dashboard metric, where to find it, and how long the platform keeps it |
-| Data explorer | Browse, create, edit and delete rows in any table; read any view |
+| Dashboard | Totals, what expires soonest, performance chart with post markers, accounts, top posts |
+| Posts | Every post across platforms, sortable and searchable; a post opens in a linkable side sheet with its provenance |
+| Audience | Latest demographic breakdowns and people who left |
+| Earnings | Revenue by source and period, one list per currency |
+| Import | Drop an export, see an exact dry run, then import; daily history held and import history |
+| Metrics | Every platform metric, how long the platform keeps it, where to export it |
+| Accounts | Add, edit and delete accounts |
+| Data | Browse, create, edit and delete rows in any table; read any view |
 
 ### CSV import
 
@@ -39,7 +80,7 @@ Any other column is matched to `metric_definitions` by `metric_key` or by its GU
 
 ## MCP server
 
-Tools: `describe_schema`, `read_rows`, `create_rows`, `update_row`, `delete_row`, `sync_content`, `sync_account_metrics`, `sync_relationships`, `import_csv_file`, `dashboard_overview`, `metric_timeseries`.
+Tools: `describe_schema`, `read_rows`, `create_rows`, `update_row`, `delete_row`, `sync_content`, `sync_account_metrics`, `sync_relationships`, `sync_revenue`, `import_file`, `dashboard_overview`, `metric_timeseries`, `expiring_metrics`.
 
 - **Claude Code**: `.mcp.json` in this folder registers it automatically. Start Claude Code here and approve the server.
 - **Claude Desktop**: add to `claude_desktop_config.json`:
@@ -58,7 +99,9 @@ Each call creates one `import_batches` row.
 
 ## REST API
 
-`GET /api/schema` · `GET|POST|PATCH|DELETE /api/tables/{table}` (filters: `?col=v`, `?col__gte=v`, `__like`, `__isnull`…; PATCH/DELETE take the primary key as query params) · `POST /api/sync/{content,account-metrics,relationships}` · `POST /api/import/csv` · `GET /api/dashboard/{overview,timeseries}`
+Everything lives under `/api/v1` and returns `{"code": 200, "msg": "Success", "data": …}`; errors use the same shape with the HTTP status as `code`.
+
+`GET /health` · `GET /schema` · `GET|POST|PATCH|DELETE /tables/{table}` (filters: `?col=v`, `?col__gte=v`, `__like`, `__isnull`…; PATCH/DELETE take the primary key as query params) · `POST /sync/{content,account-metrics,relationships}` · `POST /imports` (CSV, or LinkedIn analytics .xlsx) · `GET /dashboard/{overview,timeseries}`
 
 ## Change to the data model
 

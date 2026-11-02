@@ -1,0 +1,125 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/noto-sans-arabic';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Dark is the default. Components use these role names, never hex values. See docs/brand/GUIDE.md. */
+:root {
+  --background: #eef0fb;
+  --panel: #f8f9fe;
+  --card: #ffffff;
+  --foreground: #0d121c;
+  --muted-foreground: #565d78;
+  --muted: #e9ebf7;
+  --accent: #e2e0fe;
+  --primary: #5b47e9;
+  --primary-foreground: #ffffff;
+  --link: #4f3be0;
+  --chart: #5b47e9;
+  --success: #0b7a50;
+  --warning: #c01a78;
+  --destructive: #c62828;
+  --border: rgb(13 18 28 / 10%);
+  --input: rgb(13 18 28 / 16%);
+}
+
+.dark {
+  --background: #0b1141;
+  --panel: #0d121c;
+  --card: #151823;
+  --foreground: #f5f6fb;
+  --muted-foreground: #9aa1b8;
+  --muted: #1e2230;
+  --accent: #272463;
+  --primary: #6556fb;
+  --primary-foreground: #ffffff;
+  --link: #a69dff;
+  --chart: #8070fa;
+  --success: #34d399;
+  --warning: #f472b6;
+  --destructive: #f87171;
+  --border: rgb(255 255 255 / 8%);
+  --input: rgb(255 255 255 / 12%);
+}
+
+@theme inline {
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --text-2xl: 1.625rem;
+  --text-2xl--line-height: 2.125rem;
+  --text-3xl: 2rem;
+  --text-3xl--line-height: 2.5rem;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--link);
+  --color-link: var(--link);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-sans: 'Plus Jakarta Sans Variable', 'Noto Sans Arabic Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  :focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+  }
+  a,
+  button {
+    transition-duration: 120ms;
+  }
+}
+
+@keyframes limit-drop {
+  from {
+    transform: scaleY(0);
+  }
+}
+.limit-line {
+  transform-box: fill-box;
+  transform-origin: top;
+  animation: limit-drop 400ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
