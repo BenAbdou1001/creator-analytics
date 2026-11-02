@@ -35,8 +35,9 @@ export function TrendCard({ accounts, saved }: { accounts: AccountOverview[]; sa
   const points = series.data ?? []
 
   return (
-    <Card>
-      <CardContent>
+    <Card className="min-w-0 py-5">
+      <CardContent className="px-5">
+        <h2 className="mb-3 font-semibold">Performance</h2>
         <div className="mb-4 flex flex-wrap gap-2">
           <NativeSelect
             aria-label="Account"
@@ -57,7 +58,7 @@ export function TrendCard({ accounts, saved }: { accounts: AccountOverview[]; sa
             <LineChart
               points={points}
               label={metric?.label ?? ''}
-              color={`var(--${account.platform})`}
+              color="var(--chart)"
               platform={PLATFORM_LABEL[account.platform]}
               retentionDays={metric?.retentionDays}
               posts={posts.data}
@@ -70,7 +71,7 @@ export function TrendCard({ accounts, saved }: { accounts: AccountOverview[]; sa
               <DataTable
                 rows={points}
                 columns={[
-                  { key: 'periodStart', label: 'Date', render: (r) => <span className="font-mono">{prettyDay(r.periodStart)}</span> },
+                  { key: 'periodStart', label: 'Date', render: (r) => <span className="tabular-nums">{prettyDay(r.periodStart)}</span> },
                   { key: 'value', label: 'Value', align: 'right', render: (r) => <Sounding value={r.value} full /> },
                 ]}
               />
@@ -80,8 +81,8 @@ export function TrendCard({ accounts, saved }: { accounts: AccountOverview[]; sa
           <p className="py-12 text-sm text-muted-foreground">
             Nothing saved day by day for {metric?.label ?? 'this metric'} yet.
             {metric?.guiPath && ` Export it from ${metric.guiPath}, then `}
-            <Link to="/import" className="text-deep hover:underline">
-              bring it in
+            <Link to="/import" className="text-link hover:underline">
+              import it
             </Link>
             .
           </p>

@@ -4,7 +4,7 @@ import { DashboardPage, expiringOptions, overviewOptions, validateTodaySearch } 
 import { pageTitle } from '@/shared/lib/brand'
 
 export const Route = createFileRoute('/')({
-  head: () => pageTitle('Today'),
+  head: () => pageTitle('Dashboard'),
   validateSearch: validateTodaySearch,
   loader: ({ context: { queryClient } }) =>
     Promise.all([

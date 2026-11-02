@@ -29,18 +29,18 @@ export function EarningsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {totalsByCurrency(rows).map((t) => (
           <Card key={t.currency} className="gap-3 px-5 py-4">
-            <h2 className="text-sm font-medium">By source, {t.currency}</h2>
+            <h2 className="text-sm font-semibold">By source, {t.currency}</h2>
             <BarList items={t.items} />
           </Card>
         ))}
       </div>
-      <h2 className="mt-10 mb-3 text-sm font-medium">Every period</h2>
+      <h2 className="mt-10 mb-3 text-sm font-semibold">Every period</h2>
       <Card className="py-0">
         <DataTable
           rows={rows}
           columns={[
-            { key: 'period_start', label: 'From', render: (r) => <span className="font-mono">{prettyDay(r.period_start)}</span> },
-            { key: 'period_end', label: 'To', render: (r) => <span className="font-mono">{prettyDay(r.period_end)}</span> },
+            { key: 'period_start', label: 'From', render: (r) => <span className="tabular-nums">{prettyDay(r.period_start)}</span> },
+            { key: 'period_end', label: 'To', render: (r) => <span className="tabular-nums">{prettyDay(r.period_end)}</span> },
             {
               key: 'account_id',
               label: 'Account',

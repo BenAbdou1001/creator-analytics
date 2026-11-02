@@ -57,7 +57,7 @@ export function MetricsPage() {
               align: 'right',
               render: (r) =>
                 r.retentionDays ? (
-                  <span className={r.retentionDays <= SHORT_WINDOW ? 'font-mono font-medium' : 'font-mono text-muted-foreground'}>{r.retentionDays} days</span>
+                  <span className={r.retentionDays <= SHORT_WINDOW ? 'tabular-nums font-medium' : 'tabular-nums text-muted-foreground'}>{r.retentionDays} days</span>
                 ) : (
                   <span className="text-muted-foreground">No known limit</span>
                 ),

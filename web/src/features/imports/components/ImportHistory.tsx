@@ -26,7 +26,7 @@ export function ImportHistory({ accounts }: { accounts: Account[] }) {
           },
           { key: 'sourceKind', label: 'Source', render: (r) => sourceLabel(r.sourceKind) },
           { key: 'rowCount', label: 'Rows', align: 'right', render: (r) => <Sounding value={r.rowCount} /> },
-          { key: 'importedAt', label: 'Imported', render: (r) => <span className="font-mono">{prettyDay(r.importedAt)}</span> },
+          { key: 'importedAt', label: 'Imported', render: (r) => <span className="tabular-nums">{prettyDay(r.importedAt)}</span> },
         ]}
       />
     </Card>

@@ -65,7 +65,7 @@ export function AccountForm({ value, onChange, editing, pending, error, onSubmit
             </Field>
           ))}
           <label className="flex items-center gap-2 self-end pb-2 text-sm">
-            <input type="checkbox" className="size-4 accent-(--deep)" checked={value.isMonetized} onChange={(e) => set('isMonetized', e.target.checked)} />
+            <input type="checkbox" className="size-4 accent-(--primary)" checked={value.isMonetized} onChange={(e) => set('isMonetized', e.target.checked)} />
             Monetized
           </label>
           <div className="flex items-end gap-2">

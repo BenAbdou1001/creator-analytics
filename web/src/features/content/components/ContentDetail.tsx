@@ -30,13 +30,13 @@ export function ContentDetail({ id, onClose }: { id: number | undefined; onClose
             <div className="grid gap-1">
               {s?.publishedAt && <span>Published {prettyDay(s.publishedAt)}</span>}
               {c?.url && (
-                <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1 text-deep hover:underline">
+                <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1 text-link hover:underline">
                   Open on {s ? PLATFORM_LABEL[s.platform] : 'platform'}
                   <ArrowUpRight className="size-3.5" aria-hidden="true" />
                 </a>
               )}
               {c?.deletedObservedAt && s && (
-                <span className="text-overprint">
+                <span className="text-warning">
                   Removed from {PLATFORM_LABEL[s.platform]} around {prettyDay(c.deletedObservedAt)}. Your copy is safe.
                 </span>
               )}
@@ -53,7 +53,7 @@ export function ContentDetail({ id, onClose }: { id: number | undefined; onClose
               { key: 'label', label: 'Metric' },
               { key: 'periodKind', label: 'Period', render: (r) => humanize(r.periodKind) },
               { key: 'value', label: 'Value', align: 'right', render: (r) => <Sounding value={r.value} full /> },
-              { key: 'capturedAt', label: 'Saved', render: (r) => <span className="font-mono">{prettyDay(r.capturedAt)}</span> },
+              { key: 'capturedAt', label: 'Saved', render: (r) => <span className="tabular-nums">{prettyDay(r.capturedAt)}</span> },
             ]}
           />
         </div>

@@ -1,3 +1,5 @@
+> **Superseded.** The nautical Tidemark direction below was rejected on 2026-11-02. The current style is in `GUIDE.md`. This plan remains as a record of the product audit and the features it produced.
+
 # Brand and UI/UX identity plan
 
 Status: implemented on branch `brand-identity`; section 12 lists what was cut. Working name: **Tidemark** (not cleared).

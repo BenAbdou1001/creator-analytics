@@ -36,7 +36,7 @@ export function RouteNotFound() {
       <h1 className="text-2xl">Page not found</h1>
       <p className="mt-2 text-sm text-muted-foreground">Nothing lives at this address.</p>
       <Button asChild className="mt-4">
-        <Link to="/">Back to Today</Link>
+        <Link to="/">Back to Dashboard</Link>
       </Button>
     </div>
   )

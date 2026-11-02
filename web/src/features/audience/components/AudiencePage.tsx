@@ -57,8 +57,8 @@ export function AudiencePage() {
       {shown.length ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((b) => (
-            <Card key={b.dimension} className="gap-3 px-5 py-4">
-              <h2 className="text-sm font-medium">{humanize(b.dimension)}</h2>
+            <Card key={b.dimension} className="gap-3 p-5">
+              <h2 className="text-sm font-semibold">{humanize(b.dimension)}</h2>
               <BarList items={b.items} suffix={percent ? '%' : undefined} />
             </Card>
           ))}
@@ -71,7 +71,7 @@ export function AudiencePage() {
         </Card>
       )}
 
-      <h2 className="mt-10 mb-3 text-sm font-medium">People who left</h2>
+      <h2 className="mt-10 mb-3 text-sm font-semibold">People who left</h2>
       <Card className="py-0">
         <DataTable
           rows={unfollows.data ?? []}
@@ -79,8 +79,8 @@ export function AudiencePage() {
           columns={[
             { key: 'handle', label: 'Person', render: (r) => <span dir="auto">{r.display_name ?? `@${r.handle}`}</span> },
             { key: 'relation', label: 'Was', render: (r) => humanize(r.relation) },
-            { key: 'first_observed_at', label: 'First seen', render: (r) => <span className="font-mono">{prettyDay(r.first_observed_at)}</span> },
-            { key: 'ended_inferred_at', label: 'Gone by', render: (r) => <span className="font-mono">{prettyDay(r.ended_inferred_at)}</span> },
+            { key: 'first_observed_at', label: 'First seen', render: (r) => <span className="tabular-nums">{prettyDay(r.first_observed_at)}</span> },
+            { key: 'ended_inferred_at', label: 'Gone by', render: (r) => <span className="tabular-nums">{prettyDay(r.ended_inferred_at)}</span> },
           ]}
         />
       </Card>

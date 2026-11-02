@@ -7,13 +7,13 @@ const exact = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
 export function Sounding({ value, full, className }: { value: number | null | undefined; full?: boolean; className?: string }) {
   if (value === null || value === undefined)
     return (
-      <span className={cn('font-mono text-muted-foreground', className)} aria-label="no data">
+      <span className={cn('tabular-nums text-muted-foreground', className)} aria-label="no data">
         —
       </span>
     )
   const precise = exact.format(value)
   return (
-    <span className={cn('font-mono', className)} title={precise} aria-label={precise}>
+    <span className={cn('tabular-nums', className)} title={precise} aria-label={precise}>
       {full ? precise : compact.format(value)}
     </span>
   )

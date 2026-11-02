@@ -17,7 +17,7 @@ export function Provenance({ batchId }: { batchId: number | null | undefined }) 
       {data.file_sha256 && (
         <>
           {' · '}
-          <span className="font-mono" title={`SHA-256 ${data.file_sha256}`}>
+          <span className="tabular-nums" title={`SHA-256 ${data.file_sha256}`}>
             {data.file_sha256.slice(0, 8)}
           </span>
         </>

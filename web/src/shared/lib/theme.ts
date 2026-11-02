@@ -1,22 +1,12 @@
-export type ThemeChoice = 'system' | 'light' | 'dark'
+export type Theme = 'light' | 'dark'
 const KEY = 'theme'
 
-// Runs before paint: an explicit choice wins, otherwise follow the OS colour scheme.
-export const THEME_INIT_SCRIPT = `(() => {
-  const m = matchMedia('(prefers-color-scheme: dark)')
-  const apply = () => {
-    const t = localStorage.getItem('${KEY}')
-    document.documentElement.classList.toggle('dark', t ? t === 'dark' : m.matches)
-  }
-  window.__applyTheme = apply
-  apply()
-  m.addEventListener('change', apply)
-})()`
+// Runs before paint. Dark is the product default; light is an explicit choice.
+export const THEME_INIT_SCRIPT = `document.documentElement.classList.toggle('dark', localStorage.getItem('${KEY}') !== 'light')`
 
-export const readTheme = () => (localStorage.getItem(KEY) as ThemeChoice | null) ?? 'system'
+export const readTheme = (): Theme => (localStorage.getItem(KEY) === 'light' ? 'light' : 'dark')
 
-export function setTheme(choice: ThemeChoice) {
-  if (choice === 'system') localStorage.removeItem(KEY)
-  else localStorage.setItem(KEY, choice)
-  ;(window as unknown as { __applyTheme: () => void }).__applyTheme()
+export function setTheme(theme: Theme) {
+  localStorage.setItem(KEY, theme)
+  document.documentElement.classList.toggle('dark', theme === 'dark')
 }

@@ -18,12 +18,12 @@ export function RowEditor({ table, meta, draft, onChange, onSave, onCancel, pend
   return (
     <Card className="mb-6">
       <CardContent>
-        <div className="mb-2 text-sm font-medium">
+        <div className="mb-2 text-sm font-semibold">
           {draft.key ? `Edit ${table} ${JSON.stringify(draft.key)}` : `New ${table} row`}
         </div>
         <Textarea
           aria-label="Row JSON"
-          className="h-64 font-mono text-xs"
+          className="h-64 tabular-nums text-xs"
           value={draft.text}
           onChange={(e) => onChange({ ...draft, text: e.target.value })}
         />
