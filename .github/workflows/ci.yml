@@ -24,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"  # the oldest version pyproject allows
       - run: uv sync --locked
       - run: uv run pytest
 
