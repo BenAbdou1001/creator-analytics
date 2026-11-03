@@ -1,9 +1,19 @@
-# Creator Analytics
+<img src="docs/brand/logo/master/horizontal.svg" alt="Creator Analytics" width="320">
+
+[![CI](https://github.com/BenAbdou1001/creator-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/BenAbdou1001/creator-analytics/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-6556FB.svg)](LICENSE)
 
 One place for your YouTube, TikTok, Instagram and LinkedIn numbers, including what each platform is about to delete and
 where every value came from.
 
+Self-hosted and single-user. Data comes in from the platforms' own CSV and XLSX exports, or from an AI agent through the
+MCP server. Nothing is scraped and nothing leaves your machine.
+
+> **No authentication.** Anyone who can reach the API can read and delete everything. Run it on your own machine, or
+> behind a proxy that adds auth. See [SECURITY.md](SECURITY.md).
+
 - `docs/brand/GUIDE.md` – UI style guide
+- `docs/brand/logo/` – logo files and usage
 - `backend/` – FastAPI REST API **and** the MCP server, layered like [fastapi-best-architecture](https://github.com/fastapi-practices/fastapi-best-architecture)
 - `web/` – TanStack Start + TanStack Query + shadcn/ui dashboard, feature-based
 
@@ -36,17 +46,25 @@ web/src/
     index.ts                 the feature's public API: import features only through it
   shared/
     components/ui/           shadcn/ui (add more with `npx shadcn@latest add <name>`)
-    components/common/       AppSidebar, DataTable, Sounding, PlatformBadge, Provenance, ConfirmDialog, EmptyState…
+    components/common/       Rail, BrandMark, DataTable, Sounding, PlatformBadge, Provenance, ConfirmDialog, EmptyState…
     lib/                     api-client.ts (the one fetch wrapper), tables.ts (generic table queries), format, nav, utils (cn)
     styles/globals.css       shadcn tokens + platform colours, light/dark
 ```
 
 ## Run it
 
+Needs Docker, [uv](https://docs.astral.sh/uv/) and Node 22 or newer.
+
 ```bash
+git clone https://github.com/BenAbdou1001/creator-analytics.git && cd creator-analytics
 docker compose up -d                                  # Postgres 17 on :5433
 cd backend && uv sync && uv run alembic upgrade head  # schema, views and the metric catalogue
 uv run fastapi dev main.py --port 8000                # API docs: http://localhost:8000/docs
+```
+
+In a second terminal, from the repo root:
+
+```bash
 cd web && npm install && npm run dev                  # http://localhost:3000 (Vite picks the next free port if taken)
 ```
 
@@ -103,6 +121,15 @@ Everything lives under `/api/v1` and returns `{"code": 200, "msg": "Success", "d
 
 `GET /health` · `GET /schema` · `GET|POST|PATCH|DELETE /tables/{table}` (filters: `?col=v`, `?col__gte=v`, `__like`, `__isnull`…; PATCH/DELETE take the primary key as query params) · `POST /sync/{content,account-metrics,relationships}` · `POST /imports` (CSV, or LinkedIn analytics .xlsx) · `GET /dashboard/{overview,timeseries}`
 
-## Change to the data model
+## Deferred batch foreign keys
 
-`db/02-deferrable-batch-fks.sql` makes the foreign keys to `import_batches` `DEFERRABLE INITIALLY DEFERRED`. Without it, deleting an account that has imported data fails: Postgres checks the batch FK before the nested cascade (account → content → facts) has removed the facts. A batch that still has facts still can't be deleted on its own.
+The foreign keys to `import_batches` are `DEFERRABLE INITIALLY DEFERRED` (see the initial Alembic migration). Without that, deleting an account that has imported data fails: Postgres checks the batch FK before the nested cascade (account → content → facts) has removed the facts. A batch that still has facts still can't be deleted on its own.
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE). The bundled fonts, Plus Jakarta Sans and Noto Sans Arabic, are under the SIL Open Font License. Platform
+names and marks belong to their owners; this project is not affiliated with YouTube, TikTok, Instagram or LinkedIn.

@@ -9,3 +9,5 @@ dist/
 
 # design skill source, installed under ~/.claude*/skills
 unslop/
+.DS_Store
+.claude/
