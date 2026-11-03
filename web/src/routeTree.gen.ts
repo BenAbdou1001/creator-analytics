@@ -17,6 +17,9 @@ import { Route as DataRouteImport } from './routes/data'
 import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as MetricsRouteImport } from './routes/metrics'
+import { Route as ContentIdRouteImport } from './routes/content_.$id'
+import { Route as ContentNewRouteImport } from './routes/content_.new'
+import { Route as ContentIdEditRouteImport } from './routes/content_.$id_.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +61,21 @@ const MetricsRoute = MetricsRouteImport.update({
   path: '/metrics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentIdRoute = ContentIdRouteImport.update({
+  id: '/content_/$id',
+  path: '/content/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentNewRoute = ContentNewRouteImport.update({
+  id: '/content_/new',
+  path: '/content/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentIdEditRoute = ContentIdEditRouteImport.update({
+  id: '/content_/$id_/edit',
+  path: '/content/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +86,9 @@ export interface FileRoutesByFullPath {
   '/earnings': typeof EarningsRoute
   '/import': typeof ImportRoute
   '/metrics': typeof MetricsRoute
+  '/content/$id': typeof ContentIdRoute
+  '/content/new': typeof ContentNewRoute
+  '/content/$id/edit': typeof ContentIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +99,9 @@ export interface FileRoutesByTo {
   '/earnings': typeof EarningsRoute
   '/import': typeof ImportRoute
   '/metrics': typeof MetricsRoute
+  '/content/$id': typeof ContentIdRoute
+  '/content/new': typeof ContentNewRoute
+  '/content/$id/edit': typeof ContentIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +113,9 @@ export interface FileRoutesById {
   '/earnings': typeof EarningsRoute
   '/import': typeof ImportRoute
   '/metrics': typeof MetricsRoute
+  '/content_/$id': typeof ContentIdRoute
+  '/content_/new': typeof ContentNewRoute
+  '/content_/$id_/edit': typeof ContentIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +128,9 @@ export interface FileRouteTypes {
     | '/earnings'
     | '/import'
     | '/metrics'
+    | '/content/$id'
+    | '/content/new'
+    | '/content/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +141,9 @@ export interface FileRouteTypes {
     | '/earnings'
     | '/import'
     | '/metrics'
+    | '/content/$id'
+    | '/content/new'
+    | '/content/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -121,6 +154,9 @@ export interface FileRouteTypes {
     | '/earnings'
     | '/import'
     | '/metrics'
+    | '/content_/$id'
+    | '/content_/new'
+    | '/content_/$id_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +168,9 @@ export interface RootRouteChildren {
   EarningsRoute: typeof EarningsRoute
   ImportRoute: typeof ImportRoute
   MetricsRoute: typeof MetricsRoute
+  ContentIdRoute: typeof ContentIdRoute
+  ContentNewRoute: typeof ContentNewRoute
+  ContentIdEditRoute: typeof ContentIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +231,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MetricsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content_/$id': {
+      id: '/content_/$id'
+      path: '/content/$id'
+      fullPath: '/content/$id'
+      preLoaderRoute: typeof ContentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content_/new': {
+      id: '/content_/new'
+      path: '/content/new'
+      fullPath: '/content/new'
+      preLoaderRoute: typeof ContentNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content_/$id_/edit': {
+      id: '/content_/$id_/edit'
+      path: '/content/$id/edit'
+      fullPath: '/content/$id/edit'
+      preLoaderRoute: typeof ContentIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +264,9 @@ const rootRouteChildren: RootRouteChildren = {
   EarningsRoute: EarningsRoute,
   ImportRoute: ImportRoute,
   MetricsRoute: MetricsRoute,
+  ContentIdRoute: ContentIdRoute,
+  ContentNewRoute: ContentNewRoute,
+  ContentIdEditRoute: ContentIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

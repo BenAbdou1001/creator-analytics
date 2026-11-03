@@ -5,12 +5,12 @@ import { postDatesOptions } from '@/features/content'
 import { metricDefinitionsOptions } from '@/features/metrics'
 import { DataTable } from '@/shared/components/common/DataTable'
 import { ErrorText } from '@/shared/components/common/ErrorText'
-import { Options } from '@/shared/components/common/Options'
 import { Provenance } from '@/shared/components/common/Provenance'
 import { Sounding } from '@/shared/components/common/Sounding'
 import { Card, CardContent } from '@/shared/components/ui/card'
+import { FILTER_WIDTH } from '@/shared/components/common/Field'
 import { Input } from '@/shared/components/ui/input'
-import { NativeSelect } from '@/shared/components/ui/native-select'
+import { Select } from '@/shared/components/ui/select'
 import { PLATFORM_LABEL, prettyDay } from '@/shared/lib/format'
 import { timeseriesOptions } from '../api/queries'
 import type { AccountOverview, ExpiringMetric, TodaySearch } from '../types'
@@ -39,18 +39,13 @@ export function TrendCard({ accounts, saved }: { accounts: AccountOverview[]; sa
       <CardContent className="px-5">
         <h2 className="mb-3 font-semibold">Performance</h2>
         <div className="mb-4 flex flex-wrap gap-2">
-          <NativeSelect
+          <Select
             aria-label="Account"
             value={String(account.accountId)}
-            onChange={(e) => go({ account: Number(e.target.value), metric: undefined })}
-          >
-            <Options options={accounts.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
-          </NativeSelect>
-          <NativeSelect aria-label="Metric" value={metric?.metricKey ?? ''} onChange={(e) => go({ metric: e.target.value })}>
-            <Options options={rows.map((m) => [m.metricKey, m.label] as const)} />
-          </NativeSelect>
-          <Input type="date" className="w-auto" value={search.from ?? ''} onChange={(e) => go({ from: e.target.value || undefined })} aria-label="From" />
-          <Input type="date" className="w-auto" value={search.to ?? ''} onChange={(e) => go({ to: e.target.value || undefined })} aria-label="To" />
+            onValueChange={(v) => go({ account: Number(v), metric: undefined })} options={accounts.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
+          <Select aria-label="Metric" value={metric?.metricKey ?? ''} onValueChange={(v) => go({ metric: v })} options={rows.map((m) => [m.metricKey, m.label] as const)} />
+          <Input type="date" className={FILTER_WIDTH} value={search.from ?? ''} onChange={(e) => go({ from: e.target.value || undefined })} aria-label="From" />
+          <Input type="date" className={FILTER_WIDTH} value={search.to ?? ''} onChange={(e) => go({ to: e.target.value || undefined })} aria-label="To" />
         </div>
         <ErrorText error={series.error} />
         {points.length ? (

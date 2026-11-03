@@ -1,11 +1,10 @@
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { DataTable } from '@/shared/components/common/DataTable'
-import { Options } from '@/shared/components/common/Options'
 import { PageHeader } from '@/shared/components/common/PageHeader'
 import { PlatformBadge } from '@/shared/components/common/PlatformBadge'
 import { Card } from '@/shared/components/ui/card'
-import { NativeSelect } from '@/shared/components/ui/native-select'
+import { Select } from '@/shared/components/ui/select'
 import { humanOptions, humanize, platformOptions } from '@/shared/lib/format'
 import { schemaOptions } from '@/shared/lib/tables'
 import { metricDefinitionsOptions } from '../api/queries'
@@ -27,12 +26,8 @@ export function MetricsPage() {
         title="Metrics"
         description="Every number the platform dashboards show, how long each platform keeps it, and where to export it."
       >
-        <NativeSelect aria-label="Platform" value={search.platform ?? ''} onChange={(e) => go({ platform: e.target.value || undefined })}>
-          <Options placeholder="All platforms" options={platformOptions(schema.enums.platform_t)} />
-        </NativeSelect>
-        <NativeSelect aria-label="Applies to" value={search.scope ?? ''} onChange={(e) => go({ scope: e.target.value || undefined })}>
-          <Options placeholder="Everything" options={humanOptions(schema.enums.metric_scope_t)} />
-        </NativeSelect>
+        <Select aria-label="Platform" value={search.platform ?? ''} onValueChange={(v) => go({ platform: v || undefined })} placeholder="All platforms" options={platformOptions(schema.enums.platform_t)} />
+        <Select aria-label="Applies to" value={search.scope ?? ''} onValueChange={(v) => go({ scope: v || undefined })} placeholder="Everything" options={humanOptions(schema.enums.metric_scope_t)} />
       </PageHeader>
       <Card className="py-0">
         <DataTable

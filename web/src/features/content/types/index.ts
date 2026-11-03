@@ -44,7 +44,6 @@ export interface ContentSearch {
   q?: string
   orderBy: ContentSort
   offset: number
-  post?: number
 }
 
 export function validateContentSearch(s: Record<string, unknown>): ContentSearch {
@@ -55,6 +54,19 @@ export function validateContentSearch(s: Record<string, unknown>): ContentSearch
     q: (s.q as string) || undefined,
     orderBy,
     offset: Number(s.offset ?? 0),
-    post: s.post ? Number(s.post) : undefined,
   }
+}
+
+/** /content/$id/edit?version=: which brief the form edits (a brief_id); 'new' saves a new version. */
+export function validatePostEditSearch(s: Record<string, unknown>): { version?: number | 'new' } {
+  if (s.version === 'new') return { version: 'new' }
+  return { version: s.version ? Number(s.version) : undefined }
+}
+
+/** The posts list as the menu opens it. */
+export const ALL_POSTS: ContentSearch = { orderBy: 'publishedAt', offset: 0 }
+
+/** /content/$id?brief=: which brief version is shown. */
+export function validatePostSearch(s: Record<string, unknown>): { brief?: number } {
+  return { brief: s.brief ? Number(s.brief) : undefined }
 }

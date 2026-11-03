@@ -10,7 +10,7 @@ const METRICS = ['views', 'impressions', 'likes', 'comments', 'shares', 'saves',
 
 export function ContentTable({ rows, search = { orderBy: 'publishedAt', offset: 0 }, onSort, compact, empty }: {
   rows: ContentSummary[]
-  /** where a title link goes: the current list, plus the open post */
+  /** current sort */
   search?: ContentSearch
   onSort?: (key: ContentSort) => void
   /** home screen: no publish date */
@@ -32,7 +32,7 @@ export function ContentTable({ rows, search = { orderBy: 'publishedAt', offset: 
           key: 'title',
           label: 'Post',
           render: (r) => (
-            <Link to="/content" search={{ ...search, post: r.contentId }} className="block max-w-[24rem] truncate hover:underline" dir="auto">
+            <Link to="/content/$id" params={{ id: String(r.contentId) }} className="block max-w-[24rem] truncate hover:underline" dir="auto">
               {r.title ?? 'Untitled'}
             </Link>
           ),

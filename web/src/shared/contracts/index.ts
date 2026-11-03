@@ -100,6 +100,23 @@ export interface ContentItemDto {
   deleted_observed_at: string | null
 }
 
+/** content_briefs row. Its ~40 creative fields are edited generically from the schema, so they stay untyped here. */
+export type ContentBriefDto = Record<string, unknown> & {
+  brief_id: number
+  content_id: number
+  label: string | null
+  active_from: string
+}
+
+/** v_content_performance row: the post's summary numbers + its current brief's fields (null when it has none). */
+export type ContentPerformanceDto = ContentSummaryDto &
+  Record<string, unknown> & {
+    caption_length: number | null
+    engagement_rate: number | null
+    brief_count: number
+    brief_id: number | null
+  }
+
 export interface ContentLatestMetricDto {
   content_id: number
   metric_key: string
