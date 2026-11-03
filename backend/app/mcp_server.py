@@ -63,7 +63,17 @@ async def read_rows(table: str, filters: dict[str, Any] | None = None, limit: in
 @mcp.tool()
 async def create_rows(table: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Insert one or more rows into a table in a single transaction; returns the inserted rows.
-    Omit serial ids and defaulted columns. Enum/date/json values may be passed as plain strings/objects."""
+    Omit serial ids and defaulted columns. Enum/date/json values may be passed as plain strings/objects.
+
+    content_briefs = the creative decisions behind a post (fill it from a transcript/caption). Every insert is a
+    new version; the newest brief_id is the post's current brief (see v_content_performance). Only content_id is
+    required, e.g. create_rows("content_briefs", [{"content_id": 1, "label": "A - question hook",
+    "topic": "productivity", "content_format": "tutorial", "audience_awareness": "problem_aware",
+    "hook_text": "Why do 90% of todo lists fail?", "hook_type": "question", "hook_duration_seconds": 2.5,
+    "main_points": ["capture", "triage", "review"], "cta": "Follow for part 2", "cta_placement": "end",
+    "voiceover": true, "audio_quality": 4, "storytelling": false}]).
+    Enums: content_format, audience_awareness, cta_placement (values in describe_schema); audio_quality is 1-5.
+    Free-text fields (topic, hook_type, content_pillar...) are grouped on: reuse existing spellings, lowercase."""
     async with transaction() as db:
         return await table_service.create(db=db, table=table, rows=rows)
 

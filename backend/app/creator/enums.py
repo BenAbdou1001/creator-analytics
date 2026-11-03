@@ -161,3 +161,34 @@ class SourceKind(StrEnum):
     takeout_archive = 'takeout_archive'
     screenshot = 'screenshot'
     copy_paste = 'copy_paste'
+
+
+class ContentFormat(StrEnum):
+    tutorial = 'tutorial'
+    storytelling = 'storytelling'
+    vlog = 'vlog'
+    listicle = 'listicle'
+    review = 'review'
+    reaction = 'reaction'
+    interview = 'interview'
+    behind_the_scenes = 'behind_the_scenes'
+    educational = 'educational'
+    entertainment = 'entertainment'
+    other = 'other'
+
+
+class AudienceAwareness(StrEnum):  # Eugene Schwartz's five stages
+    unaware = 'unaware'
+    problem_aware = 'problem_aware'
+    solution_aware = 'solution_aware'
+    product_aware = 'product_aware'
+    most_aware = 'most_aware'
+
+
+class CtaPlacement(StrEnum):
+    none = 'none'
+    start = 'start'
+    middle = 'middle'
+    end = 'end'
+    throughout = 'throughout'
+    caption_only = 'caption_only'

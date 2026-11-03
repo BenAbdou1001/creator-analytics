@@ -5,11 +5,10 @@ import { metricDefinitionsOptions } from '@/features/metrics'
 import { BarList } from '@/shared/components/common/BarList'
 import { DataTable } from '@/shared/components/common/DataTable'
 import { EmptyState } from '@/shared/components/common/EmptyState'
-import { Options } from '@/shared/components/common/Options'
 import { PageHeader } from '@/shared/components/common/PageHeader'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
-import { NativeSelect } from '@/shared/components/ui/native-select'
+import { Select } from '@/shared/components/ui/select'
 import { humanize, prettyDay } from '@/shared/lib/format'
 import { breakdownsOptions, unfollowsOptions } from '../api/queries'
 
@@ -44,13 +43,9 @@ export function AudiencePage() {
   return (
     <>
       <PageHeader title="Audience" description="Who follows you and who sees your posts, as of your latest import.">
-        <NativeSelect aria-label="Account" value={String(id)} onChange={(e) => navigate({ search: { account: Number(e.target.value) } })}>
-          <Options options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
-        </NativeSelect>
+        <Select aria-label="Account" value={String(id)} onValueChange={(v) => navigate({ search: { account: Number(v) } })} options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
         {sets.length > 1 && (
-          <NativeSelect aria-label="Group" value={String(metricId)} onChange={(e) => navigate({ search: (s) => ({ ...s, metric: Number(e.target.value) }) })}>
-            <Options options={sets.map((m) => [String(m), metric(m)?.label ?? `Metric ${m}`] as const)} />
-          </NativeSelect>
+          <Select aria-label="Group" value={String(metricId)} onValueChange={(v) => navigate({ search: (s) => ({ ...s, metric: Number(v) }) })} options={sets.map((m) => [String(m), metric(m)?.label ?? `Metric ${m}`] as const)} />
         )}
       </PageHeader>
 

@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react'
 import { accountLabel } from '@/features/accounts'
 import type { Account } from '@/features/accounts'
 import { ErrorText } from '@/shared/components/common/ErrorText'
-import { Field } from '@/shared/components/common/Field'
-import { Options } from '@/shared/components/common/Options'
+import { Field, FormActions, FormGrid } from '@/shared/components/common/Field'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
-import { NativeSelect } from '@/shared/components/ui/native-select'
+import { Select } from '@/shared/components/ui/select'
 import { humanOptions, prettyDay } from '@/shared/lib/format'
 import { schemaOptions } from '@/shared/lib/tables'
 import { cn } from '@/shared/lib/utils'
@@ -49,11 +48,11 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
   return (
     <Card>
       <CardContent className="grid gap-4">
-        <Field label="Account" className="w-fit">
-          <NativeSelect value={String(accountId)} onChange={(e) => onAccount(Number(e.target.value))}>
-            <Options options={accounts.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
-          </NativeSelect>
-        </Field>
+        <FormGrid>
+          <Field label="Account">
+            <Select className="w-full" value={String(accountId)} onValueChange={(v) => onAccount(Number(v))} options={accounts.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
+          </Field>
+        </FormGrid>
 
         <label
           className={cn(
@@ -86,23 +85,17 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
 
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground hover:text-foreground">File options</summary>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <FormGrid className="mt-3">
             <Field label="Read this file as">
-              <NativeSelect className="w-full" value={kind} onChange={(e) => setKind(e.target.value as ImportKind)}>
-                <Options options={[['auto', 'Detect it'], ['content', 'One row per post'], ['account_metrics', 'One row per date']]} />
-              </NativeSelect>
+              <Select className="w-full" value={kind} onValueChange={(v) => setKind(v as ImportKind)} options={[['auto', 'Detect it'], ['content', 'One row per post'], ['account_metrics', 'One row per date']]} />
             </Field>
             <Field label="Post type, if the file has none">
-              <NativeSelect className="w-full" value={contentType} onChange={(e) => setContentType(e.target.value)}>
-                <Options options={humanOptions(schema.enums.content_type_t)} />
-              </NativeSelect>
+              <Select className="w-full" value={contentType} onValueChange={(v) => setContentType(v)} options={humanOptions(schema.enums.content_type_t)} />
             </Field>
             <Field label="Each dated row covers a">
-              <NativeSelect className="w-full" value={periodKind} onChange={(e) => setPeriodKind(e.target.value)}>
-                <Options options={humanOptions(['day', 'week', 'month', 'year'])} />
-              </NativeSelect>
+              <Select className="w-full" value={periodKind} onValueChange={(v) => setPeriodKind(v)} options={humanOptions(['day', 'week', 'month', 'year'])} />
             </Field>
-          </div>
+          </FormGrid>
         </details>
 
         <ErrorText error={preview.error ?? upload.error} />
@@ -126,18 +119,17 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
                 You imported this exact file on {prettyDay(preview.data.alreadyImportedAt)}. Importing it again adds a new snapshot.
               </p>
             )}
-            <div className="mt-2 flex gap-2">
+            <FormActions className="mt-2">
               <Button
-                size="sm"
                 disabled={upload.isPending}
                 onClick={() => input && upload.mutate(input, { onSuccess: () => (setDone(file.name), setFile(null)) })}
               >
                 {upload.isPending ? 'Importing' : 'Import file'}
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => choose(null)}>
+              <Button variant="ghost" onClick={() => choose(null)}>
                 Cancel
               </Button>
-            </div>
+            </FormActions>
           </div>
         )}
       </CardContent>

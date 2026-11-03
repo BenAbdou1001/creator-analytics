@@ -1,20 +1,21 @@
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
+import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { accountLabel, accountsOptions } from '@/features/accounts'
 import { ErrorText } from '@/shared/components/common/ErrorText'
-import { Options } from '@/shared/components/common/Options'
 import { PageHeader } from '@/shared/components/common/PageHeader'
 import { Pager } from '@/shared/components/common/Pager'
+import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
+import { FILTER_WIDTH } from '@/shared/components/common/Field'
 import { Input } from '@/shared/components/ui/input'
-import { NativeSelect } from '@/shared/components/ui/native-select'
+import { Select } from '@/shared/components/ui/select'
 import { humanOptions } from '@/shared/lib/format'
 import { schemaOptions } from '@/shared/lib/tables'
 import { CONTENT_PAGE_SIZE, contentListOptions } from '../api/queries'
 import type { ContentSearch } from '../types'
-import { ContentDetail } from './ContentDetail'
 import { ContentTable } from './ContentTable'
+import { WhatWorked } from './WhatWorked'
 
 const route = getRouteApi('/content')
 
@@ -36,26 +37,23 @@ export function ContentPage() {
   return (
     <>
       <PageHeader title="Posts">
-        <Input type="search" aria-label="Search posts" className="w-48" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
-        <NativeSelect
+        <Input type="search" aria-label="Search posts" className={FILTER_WIDTH} placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Select
           aria-label="Account"
           value={String(search.accountId ?? '')}
-          onChange={(e) => go({ accountId: e.target.value ? Number(e.target.value) : undefined })}
-        >
-          <Options placeholder="All accounts" options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
-        </NativeSelect>
-        <NativeSelect aria-label="Type" value={search.contentType ?? ''} onChange={(e) => go({ contentType: e.target.value || undefined })}>
-          <Options placeholder="All types" options={humanOptions(schema.enums.content_type_t)} />
-        </NativeSelect>
+          onValueChange={(v) => go({ accountId: v ? Number(v) : undefined })} placeholder="All accounts" options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
+        <Select aria-label="Type" value={search.contentType ?? ''} onValueChange={(v) => go({ contentType: v || undefined })} placeholder="All types" options={humanOptions(schema.enums.content_type_t)} />
+        <Button asChild>
+          <Link to="/content/new">New post</Link>
+        </Button>
       </PageHeader>
 
+      <WhatWorked accountId={search.accountId} />
       <ErrorText error={error} />
       <Card className="gap-0 py-0">
         <ContentTable rows={data?.rows ?? []} search={search} onSort={(orderBy) => go({ orderBy })} empty="No posts match." />
         <Pager offset={search.offset} limit={CONTENT_PAGE_SIZE} total={data?.total ?? 0} onChange={(offset) => go({ offset })} />
       </Card>
-
-      <ContentDetail id={search.post} onClose={() => navigate({ search: (s) => ({ ...s, post: undefined }), resetScroll: false })} />
     </>
   )
 }

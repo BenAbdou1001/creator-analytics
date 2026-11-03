@@ -2,6 +2,7 @@
 
 import sqlalchemy as sa
 
+from app.creator.model.content import ContentBrief
 from app.creator.model.types import content_type_t, period_kind_t, platform_t, relation_t
 from common.model import view
 
@@ -38,4 +39,13 @@ v_expiring_metrics = view(
     'v_expiring_metrics',
     sa.Column('platform', platform_t), sa.Column('label', sa.Text), sa.Column('retention_days', sa.Integer),
     sa.Column('gui_path', sa.Text),
+)
+
+# One wide row per post: summary numbers + its current (latest) brief. The "what worked" table.
+_brief_cols = [c for c in ContentBrief.__table__.columns if c.name != 'content_id']
+v_content_performance = view(
+    'v_content_performance',
+    *(sa.Column(c.name, c.type) for c in v_content_summary.columns),
+    sa.Column('caption_length', sa.Integer), sa.Column('engagement_rate', _num), sa.Column('brief_count', sa.Integer),
+    *(sa.Column(c.name, c.type) for c in _brief_cols),
 )

@@ -56,6 +56,13 @@ for handle, platform, kind, metrics, history, stale in ACCOUNTS:
               'metrics': {'views' if platform != 'linkedin' else 'impressions': random.randint(800, 90000)}}
              for i, t in enumerate(TITLES)]
     post('/sync/content', account_id=account['account_id'], items=items, source_label='Demo data')
+    content = api.get('/api/v1/tables/content_items', params={'account_id': account['account_id']}).json()['data']['rows']
+    for c in content[:5]:  # leave a couple without a brief, like real life
+        post('/tables/content_briefs', content_id=c['content_id'], topic=random.choice(['woodworking', 'tools', 'process']),
+             content_format=random.choice(['tutorial', 'storytelling', 'vlog', 'listicle']),
+             hook_type=random.choice(['question', 'bold claim', 'before/after', 'story']),
+             audience_awareness=random.choice(['unaware', 'problem_aware', 'solution_aware']),
+             cta_placement=random.choice(['end', 'caption_only', 'none']), voiceover=random.random() < 0.6)
     if platform == 'youtube':
         post('/sync/revenue', account_id=account['account_id'], rows=[
             {'metric': 'Estimated revenue', 'revenue_source': s, 'value': v, 'currency': 'USD', 'period_start': '2026-09-01', 'period_end': '2026-09-30'}

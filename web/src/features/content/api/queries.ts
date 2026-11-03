@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
-import type { ContentItemDto, ContentLatestMetricDto, ContentSummaryDto } from '@/shared/contracts'
+import type { ContentBriefDto, ContentItemDto, ContentLatestMetricDto, ContentPerformanceDto, ContentSummaryDto } from '@/shared/contracts'
 import { mapPage, rowsOptions } from '@/shared/lib/tables'
 import type { ContentSearch } from '../types'
 import { toContentItem, toContentListParams, toContentMetric, toContentSummary } from './mappers'
@@ -44,6 +44,13 @@ export const contentItemOptions = (id: number) =>
     select: (page) => (page.rows[0] ? toContentItem(page.rows[0]) : null),
   })
 
+/** The raw content_items row, for editing it. */
+export const contentRowOptions = (id: number) =>
+  queryOptions({
+    ...rowsOptions<Record<string, unknown>>('content_items', { content_id: id }),
+    select: (page) => page.rows[0] ?? null,
+  })
+
 export const contentMetricsOptions = (id: number) =>
   queryOptions({
     ...rowsOptions<ContentLatestMetricDto>('v_content_latest_metrics', {
@@ -54,3 +61,16 @@ export const contentMetricsOptions = (id: number) =>
     }),
     select: mapPage(toContentMetric),
   })
+
+/** Every brief (version) of a post, newest first. */
+export const contentBriefsOptions = (id: number) =>
+  queryOptions({
+    ...rowsOptions<ContentBriefDto>('content_briefs', { content_id: id, order_by: 'brief_id', limit: 100 }),
+    select: (page) => page.rows,
+  })
+
+/** One row per post with its current brief: feeds the "what worked" breakdown and the brief form's suggestions. */
+export const performanceOptions = queryOptions({
+  ...rowsOptions<ContentPerformanceDto>('v_content_performance', { limit: 1000 }),
+  select: (page) => page.rows,
+})

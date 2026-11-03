@@ -81,13 +81,17 @@ Demo data for judging the UI across all four platforms: see `backend/scripts/see
 | Page | What it does |
 |---|---|
 | Dashboard | Totals, what expires soonest, performance chart with post markers, accounts, top posts |
-| Posts | Every post across platforms, sortable and searchable; a post opens in a linkable side sheet with its provenance |
+| Posts | Every post across platforms, sortable and searchable; a post opens in a linkable side sheet with its provenance and its brief. "What worked" averages views / engagement rate per brief field |
 | Audience | Latest demographic breakdowns and people who left |
 | Earnings | Revenue by source and period, one list per currency |
 | Import | Drop an export, see an exact dry run, then import; daily history held and import history |
 | Metrics | Every platform metric, how long the platform keeps it, where to export it |
 | Accounts | Add, edit and delete accounts |
 | Data | Browse, create, edit and delete rows in any table; read any view |
+
+### Post briefs
+
+`content_briefs` holds the creative decisions behind a post (topic, format, hook, script, editing, written copy), written by hand or by an agent via MCP `create_rows`, never by sync or import. A post can have several briefs, one per version. The newest `brief_id` is the current brief, and `active_from` records when each version went live. `v_content_performance` gives one row per post: its numbers, its current brief, `caption_length`, `engagement_rate` and `brief_count`. The breakdown counts only single-version posts by default, because a post's lifetime numbers mix all of its versions.
 
 ### CSV import
 

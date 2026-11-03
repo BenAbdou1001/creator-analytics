@@ -118,3 +118,40 @@ def test_end_to_end():
         api.get("/api/v1/tables/people")  # people are global; remove test ones
         for p in api.get("/api/v1/tables/people", params={"handle__like": handle}).json()["data"]["rows"]:
             api.delete("/api/v1/tables/people", params={"person_id": p["person_id"]})
+
+
+def test_content_briefs():
+    handle = f"test_{uuid.uuid4().hex[:8]}"
+    acc = api.post("/api/v1/tables/accounts", json={"platform": "tiktok", "account_type": "creator",
+                                                   "handle": handle}).json()["data"]["account_id"]
+    try:
+        api.post("/api/v1/sync/content", json={"account_id": acc, "items": [
+            {"external_id": f"{handle}-a", "content_type": "short", "caption": "hello", "metrics": {"views": 200, "likes": 20}}]})
+        cid = api.get("/api/v1/tables/content_items", params={"account_id": acc}).json()["data"]["rows"][0]["content_id"]
+        perf = lambda: api.get("/api/v1/tables/v_content_performance", params={"content_id": cid}).json()["data"]["rows"]
+        assert perf()[0]["brief_count"] == 0 and perf()[0]["brief_id"] is None  # posts without a brief still listed
+
+        v1 = api.post("/api/v1/tables/content_briefs", json={"content_id": cid, "hook_type": "question",
+                                                            "main_points": ["a", "b"], "content_format": "tutorial"})
+        assert v1.status_code == 201, v1.text
+        assert v1.json()["data"]["active_from"]  # defaulted, so per-version metrics stay possible later
+        v2 = api.post("/api/v1/tables/content_briefs", json={"content_id": cid, "hook_type": "bold claim"}).json()["data"]
+
+        [row] = perf()
+        assert (row["brief_id"], row["hook_type"], row["brief_count"]) == (v2["brief_id"], "bold claim", 2)
+        assert (row["caption_length"], row["views"], row["engagement_rate"]) == (5, 200, 0.1)
+        assert api.get("/api/v1/tables/content_briefs", params={"brief_id": v1.json()["data"]["brief_id"]}
+                       ).json()["data"]["rows"][0]["main_points"] == ["a", "b"]
+
+        assert api.post("/api/v1/tables/content_briefs", json={"content_id": cid, "content_format": "nope"}).status_code == 400
+        assert api.post("/api/v1/tables/content_briefs", json={"content_id": cid, "audio_quality": 9}).status_code == 409
+
+        # a re-sync never touches the hand-written brief
+        api.post("/api/v1/sync/content", json={"account_id": acc, "items": [
+            {"external_id": f"{handle}-a", "content_type": "short", "metrics": {"views": 300}}]})
+        assert perf()[0]["hook_type"] == "bold claim" and perf()[0]["views"] == 300
+
+        api.delete("/api/v1/tables/content_items", params={"content_id": cid})
+        assert api.get("/api/v1/tables/content_briefs", params={"content_id": cid}).json()["data"]["total"] == 0
+    finally:
+        api.delete("/api/v1/tables/accounts", params={"account_id": acc})

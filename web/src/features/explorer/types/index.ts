@@ -1,4 +1,5 @@
 import type { Row } from '@/shared/types'
+import type { FormValues } from '@/shared/lib/row-form'
 
 export interface ExplorerSearch {
   table: string
@@ -7,10 +8,11 @@ export interface ExplorerSearch {
   filter_val?: string
 }
 
-/** Row being edited as JSON; `key` is null for a new row. */
+/** Row being edited in the form; `key` and `initial` are null for a new row. */
 export interface RowDraft {
   key: Row | null
-  text: string
+  values: FormValues
+  initial: FormValues | null
 }
 
 export function validateExplorerSearch(s: Record<string, unknown>): ExplorerSearch {
