@@ -3,6 +3,7 @@ import { FileUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { accountLabel } from '@/features/accounts'
 import type { Account } from '@/features/accounts'
+import { BriefQueue } from '@/features/content'
 import { ErrorText } from '@/shared/components/common/ErrorText'
 import { Disclosure } from '@/shared/components/common/Disclosure'
 import { Field, FormActions, FormGrid } from '@/shared/components/common/Field'
@@ -68,7 +69,7 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
             choose(e.dataTransfer.files[0])
           }}
         >
-          <FileUp className="size-5 text-muted-foreground" aria-hidden="true" />
+          <FileUp className="size-4 text-muted-foreground" aria-hidden="true" />
           <span>
             <span className="font-medium">{file ? file.name : 'Drop an export here, or choose a file'}</span>
             <span className="block text-muted-foreground">CSV from any platform, or LinkedIn’s .xlsx</span>
@@ -101,6 +102,7 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
         <ErrorText error={preview.error ?? upload.error} />
         {preview.isPending && <p className="text-sm text-muted-foreground">Reading {file?.name}</p>}
         {done && <ImportSummary result={upload.data!} fileName={done} />}
+        {done && <BriefQueue accountId={accountId} />}
 
         {preview.data && file && !done && (
           <div className="grid gap-1 rounded-md bg-muted px-4 py-3 text-sm">

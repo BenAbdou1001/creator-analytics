@@ -40,7 +40,7 @@ export function Experiments({ accountId }: { accountId?: number }) {
 function Column({ title, empty, children }: { title: string; empty: string; children: React.ReactNode[] }) {
   return (
     <div className="min-w-0">
-      <h2 className="mb-2 text-sm font-semibold">
+      <h2 className="mb-2 text-sm font-medium">
         {title} <span className="font-normal text-muted-foreground tabular-nums">{children.length}</span>
       </h2>
       {children.length ? <ul className="grid gap-2">{children}</ul> : <p className="text-sm text-muted-foreground">{empty}</p>}

@@ -93,6 +93,10 @@ Demo data for judging the UI across all four platforms: see `backend/scripts/see
 
 `content_briefs` holds the creative decisions behind a post (topic, format, hook, script, editing, written copy), written by hand or by an agent via MCP `create_rows`, never by sync or import. A post can have several briefs, one per version. The newest `brief_id` is the current brief, and `active_from` records when each version went live. `v_content_performance` gives one row per post: its numbers, its current brief, `caption_length`, `engagement_rate` (per view, or per impression when a platform has no views), `brief_count`, and `followers_3d`: followers gained on the publish day and the 2 days after, from the account's daily follower metric, split equally between posts published within 2 days of each other (NULL when those days aren't saved). The breakdown counts only single-version posts by default, because a post's lifetime numbers mix all of its versions.
 
+### Drafting briefs with an agent
+
+After an import, the Posts and Import pages say how many posts have no brief. In Claude Code, run the `draft_briefs` MCP prompt (`/mcp__creator-analytics__draft_briefs`): the agent calls `posts_needing_briefs` (posts without a brief, their text, and the vocabulary you already use), reads each post, and writes a brief flagged `needs_review`. Each draft shows a banner on its post page; "Looks right", or saving a fix, clears it.
+
 ### Experiments
 
 Plan a post before publishing it (Posts › Plan a post): a draft post with its brief and a **hypothesis**. After the post goes live and your next export is imported, link the plan to the real post; the brief moves onto it. From a week after publishing, the post page compares it with your typical (median) post and asks for a verdict: confirmed, not confirmed or unclear. The Posts page tracks what's planned, ready to review and still settling, and "What worked" lists field combinations you've never tried.

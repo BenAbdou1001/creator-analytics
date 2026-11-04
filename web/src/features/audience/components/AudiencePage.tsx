@@ -42,7 +42,7 @@ export function AudiencePage() {
 
   return (
     <>
-      <PageHeader title="Audience" description="Who follows you and who sees your posts, as of your latest import.">
+      <PageHeader title="Audience" description="Who follows you and who sees your posts, as of your latest import">
         <Select aria-label="Account" value={String(id)} onValueChange={(v) => navigate({ search: { account: Number(v) } })} options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
         {sets.length > 1 && (
           <Select aria-label="Group" value={String(metricId)} onValueChange={(v) => navigate({ search: (s) => ({ ...s, metric: Number(v) }) })} options={sets.map((m) => [String(m), metric(m)?.label ?? `Metric ${m}`] as const)} />
@@ -53,7 +53,7 @@ export function AudiencePage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((b) => (
             <Card key={b.dimension} className="gap-3 p-5">
-              <h2 className="text-sm font-semibold">{humanize(b.dimension)}</h2>
+              <h2 className="text-sm font-medium">{humanize(b.dimension)}</h2>
               <BarList items={b.items} suffix={percent ? '%' : undefined} />
             </Card>
           ))}
@@ -66,7 +66,10 @@ export function AudiencePage() {
         </Card>
       )}
 
-      <h2 className="mt-10 mb-3 text-sm font-semibold">People who left</h2>
+      <h2 className="mt-10 mb-3 text-sm font-medium">
+        People who left
+        {!!unfollows.data?.length && <span className="ml-2 text-muted-foreground tabular-nums">{unfollows.data.length}</span>}
+      </h2>
       <Card className="py-0">
         <DataTable
           rows={unfollows.data ?? []}

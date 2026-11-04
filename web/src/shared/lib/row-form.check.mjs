@@ -20,7 +20,7 @@ const cols = [
 const kinds = Object.fromEntries(cols.map((c) => [c.name, fieldKind(c, enums)]))
 assert.deepEqual(kinds, {
   account_id: 'number', platform: 'enum', handle: 'text', is_monetized: 'flag', verified: 'yes-no',
-  followers: 'number', created_on: 'date', types: 'enum-list', extra: 'json', points: 'text-list', captured_at: 'text',
+  followers: 'number', created_on: 'date', types: 'enum-list', extra: 'json', points: 'text-list', captured_at: 'datetime',
 })
 
 const row = { platform: 'linkedin', handle: 'nadia', is_monetized: false, verified: null, followers: 12,
@@ -28,7 +28,10 @@ const row = { platform: 'linkedin', handle: 'nadia', is_monetized: false, verifi
 const values = Object.fromEntries(cols.slice(1).map((c) => [c.name, toFieldValue(c, kinds[c.name], row[c.name])]))
 assert.equal(values.verified, '')
 assert.equal(values.followers, '12')
-assert.equal(values.captured_at, row.captured_at)
+// timestamps: local minute in the input, the same instant back out (whatever the machine's time zone)
+assert.match(values.captured_at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
+assert.equal(fromFieldValue(cols[10], 'datetime', values.captured_at), '2026-10-28T09:00:00.000Z')
+assert.throws(() => fromFieldValue(cols[10], 'datetime', 'soon'), /captured_at is not a valid date and time/)
 
 // text arrays: one item per line, blank lines dropped, empty -> null
 assert.equal(toFieldValue(cols[9], 'text-list', ['a', 'b']), 'a\nb')

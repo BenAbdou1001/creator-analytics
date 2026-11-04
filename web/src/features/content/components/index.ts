@@ -1,4 +1,6 @@
 export { ContentPage } from './ContentPage'
 export { ContentTable } from './ContentTable'
+export { BriefQueue } from './BriefQueue'
+export { CalendarPage } from './CalendarPage'
 export { PostForm } from './PostForm'
 export { PostPage } from './PostPage'

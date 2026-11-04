@@ -10,7 +10,7 @@ import { Card } from '@/shared/components/ui/card'
 import { ImportForm } from './ImportForm'
 import { ImportHistory } from './ImportHistory'
 
-const DESCRIPTION = 'Export from the platform, drop the file here, and check what will be saved before anything changes.'
+const DESCRIPTION = 'Export from the platform, drop the file here, and check what will be saved before anything changes'
 
 export function ImportsPage() {
   const {
@@ -41,7 +41,7 @@ export function ImportsPage() {
       <PageHeader title="Import" description={DESCRIPTION} />
       <ImportForm accounts={accounts} accountId={accountId} onAccount={setPicked} />
       <CoverageList accountId={accountId} />
-      <h2 className="mt-10 mb-3 text-sm font-semibold">Recent imports</h2>
+      <h2 className="mt-10 mb-3 text-sm font-medium">Recent imports</h2>
       <ImportHistory accounts={accounts} />
     </>
   )

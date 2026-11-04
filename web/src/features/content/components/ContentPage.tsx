@@ -15,6 +15,7 @@ import { schemaOptions } from '@/shared/lib/tables'
 import { CONTENT_PAGE_SIZE, contentListOptions } from '../api/queries'
 import type { ContentSearch } from '../types'
 import { ContentTable } from './ContentTable'
+import { BriefQueue } from './BriefQueue'
 import { Experiments } from './Experiments'
 import { WhatWorked } from './WhatWorked'
 
@@ -38,12 +39,10 @@ export function ContentPage() {
   return (
     <>
       <PageHeader title="Posts">
-        <Input type="search" aria-label="Search posts" className={FILTER_WIDTH} placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
         <Select
           aria-label="Account"
           value={String(search.accountId ?? '')}
           onValueChange={(v) => go({ accountId: v ? Number(v) : undefined })} placeholder="All accounts" options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
-        <Select aria-label="Type" value={search.contentType ?? ''} onValueChange={(v) => go({ contentType: v || undefined })} placeholder="All types" options={humanOptions(schema.enums.content_type_t)} />
         <Button asChild variant="outline">
           <Link to="/content/new">Add published post</Link>
         </Button>
@@ -54,11 +53,17 @@ export function ContentPage() {
         </Button>
       </PageHeader>
 
+      <BriefQueue accountId={search.accountId} className="mb-6" />
       <Experiments accountId={search.accountId} />
       <WhatWorked accountId={search.accountId} />
       <ErrorText error={error} />
       <Card className="gap-0 py-0">
-        <ContentTable rows={data?.rows ?? []} search={search} onSort={(orderBy) => go({ orderBy })} empty="No posts match." />
+        <div className="flex flex-wrap items-center gap-2 border-b p-4">
+          <h2 className="mr-auto text-base font-medium">All posts</h2>
+          <Input type="search" aria-label="Search posts" className={FILTER_WIDTH} placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Select aria-label="Type" value={search.contentType ?? ''} onValueChange={(v) => go({ contentType: v || undefined })} placeholder="All types" options={humanOptions(schema.enums.content_type_t)} />
+        </div>
+        <ContentTable rows={data?.rows ?? []} search={search} onSort={(orderBy) => go({ orderBy })} empty="No posts match" />
         <Pager offset={search.offset} limit={CONTENT_PAGE_SIZE} total={data?.total ?? 0} onChange={(offset) => go({ offset })} />
       </Card>
     </>

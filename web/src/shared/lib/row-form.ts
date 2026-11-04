@@ -4,7 +4,15 @@ import type { ColumnDto } from '@/shared/contracts'
 export type FieldValue = string | boolean | string[]
 export type FormValues = Record<string, FieldValue>
 
-export type FieldKind = 'enum' | 'enum-list' | 'text-list' | 'flag' | 'yes-no' | 'number' | 'date' | 'json' | 'text'
+export type FieldKind = 'enum' | 'enum-list' | 'text-list' | 'flag' | 'yes-no' | 'number' | 'date' | 'datetime' | 'json' | 'text'
+
+/** A stored timestamp as a <input type="datetime-local"> value: the viewer's local time, to the minute. */
+export function toLocalInput(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+}
 
 const NUMBER = new Set(['integer', 'bigint', 'smallint', 'numeric', 'real', 'double precision'])
 
@@ -15,8 +23,8 @@ export function fieldKind(col: ColumnDto, enums: Record<string, string[]>): Fiel
   if (col.type === 'boolean') return col.required ? 'flag' : 'yes-no'
   if (NUMBER.has(col.type)) return 'number'
   if (col.type === 'date') return 'date'
+  if (col.type.startsWith('timestamp')) return 'datetime'
   if (col.type === 'jsonb' || col.type === 'json') return 'json'
-  // timestamps stay text so editing never shifts their time zone
   return 'text'
 }
 
@@ -29,6 +37,7 @@ export function toFieldValue(col: ColumnDto, kind: FieldKind, value: unknown): F
   if (kind === 'json') return JSON.stringify(value, null, 2)
   if (kind === 'text-list') return Array.isArray(value) ? value.join('\n') : String(value)
   if (kind === 'date') return String(value).slice(0, 10)
+  if (kind === 'datetime') return toLocalInput(String(value))
   return String(value)
 }
 
@@ -39,6 +48,11 @@ export function fromFieldValue(col: ColumnDto, kind: FieldKind, value: FieldValu
   const text = String(value)
   if (text.trim() === '') return null
   if (kind === 'yes-no') return text === 'true'
+  if (kind === 'datetime') {
+    const d = new Date(text) // the input's value is local time
+    if (Number.isNaN(d.getTime())) throw new Error(`${col.name} is not a valid date and time`)
+    return d.toISOString()
+  }
   if (kind === 'text-list') return text.split('\n').map((l) => l.trim()).filter(Boolean)
   if (kind === 'number') {
     const n = Number(text)

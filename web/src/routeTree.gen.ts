@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountsRouteImport } from './routes/accounts'
 import { Route as AudienceRouteImport } from './routes/audience'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as ContentRouteImport } from './routes/content'
 import { Route as DataRouteImport } from './routes/data'
 import { Route as EarningsRouteImport } from './routes/earnings'
@@ -34,6 +35,11 @@ const AccountsRoute = AccountsRouteImport.update({
 const AudienceRoute = AudienceRouteImport.update({
   id: '/audience',
   path: '/audience',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContentRoute = ContentRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
   '/audience': typeof AudienceRoute
+  '/calendar': typeof CalendarRoute
   '/content': typeof ContentRoute
   '/data': typeof DataRoute
   '/earnings': typeof EarningsRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
   '/audience': typeof AudienceRoute
+  '/calendar': typeof CalendarRoute
   '/content': typeof ContentRoute
   '/data': typeof DataRoute
   '/earnings': typeof EarningsRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
   '/audience': typeof AudienceRoute
+  '/calendar': typeof CalendarRoute
   '/content': typeof ContentRoute
   '/data': typeof DataRoute
   '/earnings': typeof EarningsRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounts'
     | '/audience'
+    | '/calendar'
     | '/content'
     | '/data'
     | '/earnings'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounts'
     | '/audience'
+    | '/calendar'
     | '/content'
     | '/data'
     | '/earnings'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounts'
     | '/audience'
+    | '/calendar'
     | '/content'
     | '/data'
     | '/earnings'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountsRoute: typeof AccountsRoute
   AudienceRoute: typeof AudienceRoute
+  CalendarRoute: typeof CalendarRoute
   ContentRoute: typeof ContentRoute
   DataRoute: typeof DataRoute
   EarningsRoute: typeof EarningsRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/audience'
       fullPath: '/audience'
       preLoaderRoute: typeof AudienceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content': {
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountsRoute: AccountsRoute,
   AudienceRoute: AudienceRoute,
+  CalendarRoute: CalendarRoute,
   ContentRoute: ContentRoute,
   DataRoute: DataRoute,
   EarningsRoute: EarningsRoute,

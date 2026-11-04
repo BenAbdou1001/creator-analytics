@@ -15,7 +15,7 @@ import { TrendCard } from './TrendCard'
 function FirstRun() {
   return (
     <Card className="p-6">
-      <h2 className="font-semibold">Start keeping your numbers</h2>
+      <h2 className="font-medium">Start keeping your numbers</h2>
       <ol className="mt-3 grid max-w-prose list-inside list-decimal gap-1 text-sm text-muted-foreground">
         <li>Add the account you want to keep.</li>
         <li>Export your analytics from the platform.</li>
@@ -53,9 +53,9 @@ export function DashboardPage() {
           <TrendCard accounts={accounts} saved={expiring} />
         </div>
       </div>
-      <h2 className="mt-8 mb-3 font-semibold">Accounts</h2>
+      <h2 className="mt-8 mb-3 font-medium">Accounts</h2>
       <AccountRows accounts={accounts} />
-      <h2 className="mt-8 mb-3 font-semibold">Top posts by engagement</h2>
+      <h2 className="mt-8 mb-3 font-medium">Top posts by engagement</h2>
       <Card className="py-0">
         <ContentTable rows={top.rows} compact empty="No posts yet. Import an export or sync through your agent." />
       </Card>

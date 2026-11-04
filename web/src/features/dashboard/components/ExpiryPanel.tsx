@@ -26,9 +26,9 @@ function Row({ metric: m }: { metric: ExpiringMetric }) {
   const { text, tone } = status(m)
   return (
     <li className="flex items-center gap-3 py-2.5">
-      <PlatformTile platform={m.platform} large />
+      <PlatformTile platform={m.platform} />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold" title={m.guiPath ?? undefined}>
+        <span className="block truncate text-sm font-medium" title={m.guiPath ?? undefined}>
           {m.label}
         </span>
         <span className="block truncate text-xs text-muted-foreground">
@@ -48,7 +48,7 @@ export function ExpiryPanel({ metrics }: { metrics: ExpiringMetric[] }) {
   return (
     <Card className="min-w-0 gap-2 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">Expiring soon</h2>
+        <h2 className="font-medium">Expiring soon</h2>
         <Button asChild size="sm" variant={urgent ? 'default' : 'outline'}>
           <Link to="/import">Import data</Link>
         </Button>

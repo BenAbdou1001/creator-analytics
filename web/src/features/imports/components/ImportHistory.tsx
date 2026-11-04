@@ -13,7 +13,7 @@ export function ImportHistory({ accounts }: { accounts: Account[] }) {
     <Card className="py-0">
       <DataTable
         rows={batches.data?.rows ?? []}
-        empty="Nothing imported yet."
+        empty="Nothing imported yet"
         columns={[
           { key: 'fileName', label: 'File', render: (r) => r.fileName ?? r.sourceLabel },
           {

@@ -19,6 +19,7 @@ import { contentBatchOptions, contentBriefsOptions, contentItemOptions, contentM
 import { isDraft, reviewFrom, typical } from '../lib/what-worked'
 import type { PerformanceRow } from '../lib/what-worked'
 import { ALL_POSTS } from '../types'
+import type { ContentMetric } from '../types'
 import { BriefView } from './BriefView'
 
 /** "v3 · A - question hook · 3 Nov 2026"; versions are numbered by age, `list` is newest first. */
@@ -41,7 +42,7 @@ export function PostPage({ id, briefId }: { id: number; briefId?: number }) {
   if (!s) {
     return (
       <>
-        <PageHeader title="Post not found" description="This post is not in your archive." />
+        <PageHeader title="Post not found" description="This post is not in your archive" />
         <Button asChild variant="outline">
           <Link to="/content" search={ALL_POSTS}>Back to posts</Link>
         </Button>
@@ -52,7 +53,7 @@ export function PostPage({ id, briefId }: { id: number; briefId?: number }) {
 
   return (
     <>
-      <Link to="/content" search={ALL_POSTS} className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link to="/content" search={ALL_POSTS} className="mt-4 -mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft className="size-3.5" aria-hidden="true" /> Posts
       </Link>
       <PageHeader
@@ -79,95 +80,160 @@ export function PostPage({ id, briefId }: { id: number; briefId?: number }) {
       </PageHeader>
 
       <div className="grid gap-6">
-        {(c?.deletedObservedAt || batch.data) && (
-          <div className="grid gap-1 text-sm text-muted-foreground">
-            {c?.deletedObservedAt && (
-              <span className="text-warning">
-                Removed from {PLATFORM_LABEL[s.platform]} around {prettyDay(c.deletedObservedAt)}. Your copy is safe.
-              </span>
-            )}
+        {c?.deletedObservedAt && (
+          <p className="text-sm text-warning">
+            Removed from {PLATFORM_LABEL[s.platform]} around {prettyDay(c.deletedObservedAt)}. Your copy is safe.
+          </p>
+        )}
+
+        {!draft && perf.data && (
+          <div className="grid gap-2">
+            <Results post={perf.data} rows={all.data ?? []} />
             <Provenance batchId={batch.data} />
           </div>
         )}
+        {draft && <Provenance batchId={batch.data} />}
 
-        {c?.caption && (
-          <Card>
-            <CardContent>
-              <div className="mb-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Caption</div>
-              <p dir="auto" className="text-sm whitespace-pre-wrap">
-                {c.caption}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {draft && perf.data && <LinkDraft draft={perf.data} posts={all.data ?? []} briefs={briefs} />}
-        {!draft && perf.data && !!brief?.hypothesis && <Experiment post={perf.data} brief={brief} rows={all.data ?? []} />}
-        {!draft && perf.data && s.publishedAt && <FollowerLift followers={perf.data.followers_3d} posts={perf.data.followers_3d_posts} />}
-
-        {!draft && <Card className="gap-0 py-0">
-          <ErrorText error={metrics.error} />
-          <DataTable
-            rows={metrics.data?.rows ?? []}
-            empty="No numbers saved for this post."
-            columns={[
-              { key: 'label', label: 'Metric' },
-              { key: 'periodKind', label: 'Period', render: (r) => humanize(r.periodKind) },
-              { key: 'value', label: 'Value', align: 'right', render: (r) => <Sounding value={r.value} full /> },
-              { key: 'capturedAt', label: 'Saved', render: (r) => <span className="tabular-nums">{prettyDay(r.capturedAt)}</span> },
-            ]}
-          />
-        </Card>}
-
-        <Card>
-          <CardContent className="grid gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="mr-auto text-base font-semibold">Brief</h2>
-              {briefs.length > 1 && (
-                <Select
-                  aria-label="Version"
-                  value={String(brief.brief_id)}
-                  onValueChange={(v) => navigate({ to: '/content/$id', params: { id: String(id) }, search: { brief: Number(v) }, replace: true })} options={briefs.map((b) => [String(b.brief_id), versionLabel(briefs, b)] as const)} />
-              )}
-              {brief && (
-                <Button asChild size="sm" variant="outline">
-                  <Link to="/content/$id/edit" params={{ id: String(id) }} search={{ version: brief.brief_id }}>
-                    Edit this version
-                  </Link>
-                </Button>
-              )}
-              <Button asChild size="sm">
-                <Link to="/content/$id/edit" params={{ id: String(id) }} search={{ version: 'new' }}>
-                  {brief ? 'New version' : 'Add brief'}
-                </Link>
-              </Button>
-            </div>
-            {brief ? (
-              <BriefView brief={brief} columns={schema.tables.content_briefs?.columns ?? []} enums={schema.enums} />
-            ) : (
-              <p className="text-sm text-muted-foreground">No brief yet: record the hook, script and editing choices to compare posts later.</p>
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <div className="grid min-w-0 gap-6">
+            {c?.caption && (
+              <Card>
+                <CardContent>
+                  <h2 className="mb-2 text-sm font-medium">Caption</h2>
+                  <p dir="auto" className="text-sm whitespace-pre-wrap text-muted-foreground">
+                    {c.caption}
+                  </p>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+
+            {draft && perf.data && <LinkDraft draft={perf.data} posts={all.data ?? []} briefs={briefs} />}
+            {!draft && perf.data && !!brief?.hypothesis && <Experiment post={perf.data} brief={brief} />}
+
+            <Card>
+              <CardContent className="grid gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="mr-auto text-base font-medium">Brief</h2>
+                  {briefs.length > 1 && (
+                    <Select
+                      size="sm"
+                      aria-label="Version"
+                      value={String(brief.brief_id)}
+                      onValueChange={(v) => navigate({ to: '/content/$id', params: { id: String(id) }, search: { brief: Number(v) }, replace: true })} options={briefs.map((b) => [String(b.brief_id), versionLabel(briefs, b)] as const)} />
+                  )}
+                  {brief && (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/content/$id/edit" params={{ id: String(id) }} search={{ version: brief.brief_id }}>
+                        Edit this version
+                      </Link>
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant={brief ? 'outline' : 'default'}>
+                    <Link to="/content/$id/edit" params={{ id: String(id) }} search={{ version: 'new' }}>
+                      {brief ? 'New version' : 'Add brief'}
+                    </Link>
+                  </Button>
+                </div>
+                {brief?.needs_review === true && <ReviewDraft brief={brief} postId={id} />}
+                {brief ? (
+                  <BriefView brief={brief} columns={schema.tables.content_briefs?.columns ?? []} enums={schema.enums} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">No brief yet: record the hook, script and editing choices to compare posts later</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {!draft && <AllNumbers rows={metrics.data?.rows ?? []} error={metrics.error} />}
+        </div>
       </div>
     </>
   )
 }
 
-/** Followers gained on the publish day and the 2 days after, this post's share when others went out the same days. */
-function FollowerLift({ followers, posts }: { followers: number | null; posts: number }) {
+const ratio = (v: number) => `${(v * 100).toFixed(1)}%`
+const whole = (v: number) => (Number.isInteger(v) ? v.toLocaleString('en') : v.toFixed(1))
+
+/** The post's headline figures, each against the account's typical (median) post. The one that beat it most gets the accent. */
+function Results({ post, rows }: { post: ContentPerformanceDto; rows: ContentPerformanceDto[] }) {
+  const p = post as PerformanceRow
+  const reach = typeof post.views === 'number' ? 'views' : 'impressions'
+  const lift = post.followers_3d_posts > 1 ? `Split with ${post.followers_3d_posts - 1} other ${post.followers_3d_posts === 2 ? 'post' : 'posts'}` : 'In the 3 days after posting'
+  const figures = (
+    [
+      [reach, humanize(reach), whole],
+      ['engagement_rate', 'Engagement rate', ratio],
+      ['likes', post.platform === 'linkedin' ? 'Reactions' : 'Likes', whole],
+      ['comments', 'Comments', whole],
+      ['followers_3d', 'New followers', (v: number) => `+${whole(v)}`],
+    ] as const
+  ).map(([key, label, show]) => {
+    const mine = typeof p[key] === 'number' ? (p[key] as number) : null
+    const usual = mine === null ? null : typical(rows as PerformanceRow[], p, key)
+    return { key, label, show, mine, usual, diff: mine !== null && usual ? (mine - usual) / usual : null }
+  })
+  const best = figures.reduce<string | null>((top, f) => (f.diff !== null && f.diff > 0.05 && (!top || f.diff > figures.find((g) => g.key === top)!.diff!) ? f.key : top), null)
+
   return (
     <Card>
-      <CardContent className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="text-2xl font-semibold tabular-nums">
-          {followers === null ? '—' : `+${Number.isInteger(followers) ? followers : followers.toFixed(1)}`}
-        </span>
-        <span className="text-sm text-muted-foreground">
-          {followers === null
-            ? 'New followers after posting: no daily follower numbers saved for these days.'
-            : `new followers in the 3 days after posting${posts > 1 ? `, split with ${posts - 1} other ${posts === 2 ? 'post' : 'posts'} published the same days` : ''}.`}
-        </span>
+      <CardContent>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
+          {figures.map((f) => (
+            <div key={f.key} className="min-w-0">
+              <dt className="text-sm text-muted-foreground">{f.label}</dt>
+              <dd className={cn('mt-1 text-3xl font-medium tabular-nums', f.key === best && 'text-link', f.mine === null && 'text-muted-foreground')}>
+                {f.mine === null ? '—' : f.show(f.mine)}
+              </dd>
+              <dd className="mt-1 text-xs text-muted-foreground tabular-nums">
+                {f.key === 'followers_3d' ? (
+                  f.mine === null ? 'No daily follower numbers' : lift
+                ) : f.diff !== null ? (
+                  <>
+                    <span className={cn(f.diff > 0.05 ? 'text-success' : f.diff < -0.05 && 'text-warning')}>
+                      {f.diff >= 0 ? '+' : ''}
+                      {Math.round(f.diff * 100)}%
+                    </span>{' '}
+                    vs your typical {f.show(f.usual!)}
+                  </>
+                ) : (
+                  'No typical post to compare'
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </CardContent>
+    </Card>
+  )
+}
+
+/** Every number saved for the post, biggest first. Period and date only show when they differ between rows. */
+function AllNumbers({ rows, error }: { rows: ContentMetric[]; error: unknown }) {
+  const sorted = [...rows].sort((a, b) => b.value - a.value)
+  const periods = new Set(rows.map((r) => r.periodKind))
+  const days = new Set(rows.map((r) => prettyDay(r.capturedAt)))
+  return (
+    <Card className="gap-0 py-0">
+      <div className="flex items-baseline justify-between gap-3 px-4 pt-5 pb-2">
+        <h2 className="text-sm font-medium">All numbers</h2>
+        {rows.length > 0 && (
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {periods.size === 1 && `${humanize(rows[0].periodKind)} · `}
+            {days.size === 1 && `Saved ${[...days][0]}`}
+          </span>
+        )}
+      </div>
+      <ErrorText error={error} />
+      <DataTable
+        rows={sorted}
+        empty="No numbers saved for this post"
+        columns={[
+          { key: 'label', label: 'Metric' },
+          ...(periods.size > 1 ? [{ key: 'periodKind', label: 'Period', render: (r: (typeof rows)[number]) => humanize(r.periodKind) }] : []),
+          { key: 'value', label: 'Value', align: 'right' as const, render: (r: (typeof rows)[number]) => <Sounding value={r.value} full /> },
+          ...(days.size > 1 ? [{ key: 'capturedAt', label: 'Saved', render: (r: (typeof rows)[number]) => <span className="tabular-nums">{prettyDay(r.capturedAt)}</span> }] : []),
+        ]}
+      />
     </Card>
   )
 }
@@ -178,53 +244,30 @@ const VERDICTS = [
   ['inconclusive', 'Unclear'],
 ] as const
 
-/** This post next to the account's typical (median) post, and a verdict on the brief's hypothesis. */
-function Experiment({ post, brief, rows }: { post: ContentPerformanceDto; brief: ContentBriefDto; rows: ContentPerformanceDto[] }) {
+/** The brief's hypothesis and a verdict on it. The numbers it is judged by are in Results above. */
+function Experiment({ post, brief }: { post: ContentPerformanceDto; brief: ContentBriefDto }) {
   const queryClient = useQueryClient()
   const setVerdict = useMutation({
     mutationFn: (verdict: string | null) => tablesService.update('content_briefs', { brief_id: brief.brief_id }, { verdict }),
     onSuccess: () => queryClient.invalidateQueries(),
   })
   const p = post as PerformanceRow
-  const reach = typeof post.views === 'number' ? 'views' : 'impressions'
-  const lines = ([[reach, humanize(reach)], ['engagement_rate', 'Engagement rate'], ['followers_3d', 'New followers (3 days)']] as const)
-    .map(([key, label]) => ({ label, rate: key === 'engagement_rate', mine: p[key] as number | null, usual: typical(rows as PerformanceRow[], p, key) }))
-    .filter((l) => typeof l.mine === 'number' && l.usual !== null)
   const due = reviewFrom(p)
   const early = due !== null && due > new Date()
-  const show = (v: number, rate: boolean) => (rate ? `${(v * 100).toFixed(1)}%` : Math.round(v).toLocaleString('en'))
 
   return (
     <Card>
       <CardContent className="grid gap-4">
         <div className="flex items-start gap-3">
-          <FlaskConical className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+          <FlaskConical className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <div className="min-w-0">
-            <h2 className="text-base font-semibold">Experiment</h2>
+            <h2 className="text-base font-medium">Experiment</h2>
             <p dir="auto" className="text-sm whitespace-pre-wrap">{brief.hypothesis as string}</p>
           </div>
         </div>
-        {lines.length > 0 && (
-          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
-            {lines.map((l) => {
-              const diff = l.usual ? (l.mine! - l.usual) / l.usual : 0
-              return (
-                <div key={l.label}>
-                  <dt className="text-xs text-muted-foreground">{l.label}</dt>
-                  <dd className="tabular-nums">
-                    <span className="font-semibold">{show(l.mine!, l.rate)}</span>{' '}
-                    <span className={cn('text-xs', diff > 0.05 ? 'text-success' : diff < -0.05 ? 'text-warning' : 'text-muted-foreground')}>
-                      {diff >= 0 ? '+' : ''}{Math.round(diff * 100)}% vs your typical {show(l.usual!, l.rate)}
-                    </span>
-                  </dd>
-                </div>
-              )
-            })}
-          </dl>
-        )}
         <div className="flex flex-wrap items-center gap-2">
           <span className="mr-1 text-sm text-muted-foreground">
-            {brief.verdict ? 'Verdict' : early ? `Numbers settle after a week: judge it from ${prettyDay(due)}.` : 'Did it hold?'}
+            {brief.verdict ? 'Verdict' : early ? `Numbers settle after a week: judge it from ${prettyDay(due)}` : 'Did it hold?'}
           </span>
           {VERDICTS.map(([v, label]) => (
             <Button
@@ -268,10 +311,10 @@ function LinkDraft({ draft, posts, briefs }: { draft: ContentPerformanceDto; pos
     },
   })
   return (
-    <Card className="border border-primary/30">
+    <Card className="border">
       <CardContent className="grid gap-3">
         <div>
-          <h2 className="text-base font-semibold">Planned post</h2>
+          <h2 className="text-base font-medium">Planned post</h2>
           <p className="text-sm text-muted-foreground">
             Not published yet. After you post it and import your next export, pick it here: this brief moves onto it and the plan is removed.
           </p>
@@ -292,5 +335,28 @@ function LinkDraft({ draft, posts, briefs }: { draft: ContentPerformanceDto; pos
         <ErrorText error={link.error} />
       </CardContent>
     </Card>
+  )
+}
+
+/** An agent wrote this brief from the post's text: confirm it, or fix it in the editor (saving there confirms too). */
+function ReviewDraft({ brief, postId }: { brief: ContentBriefDto; postId: number }) {
+  const queryClient = useQueryClient()
+  const confirm = useMutation({
+    mutationFn: () => tablesService.update('content_briefs', { brief_id: brief.brief_id }, { needs_review: false }),
+    onSuccess: () => queryClient.invalidateQueries(),
+  })
+  return (
+    <div role="status" className="flex flex-wrap items-center gap-2 rounded-md border bg-muted px-3 py-2 text-sm">
+      <span className="mr-auto">Drafted by your agent from the post's text. Check it before it counts as yours.</span>
+      <Button asChild size="sm" variant="outline">
+        <Link to="/content/$id/edit" params={{ id: String(postId) }} search={{ version: brief.brief_id }}>
+          Fix something
+        </Link>
+      </Button>
+      <Button size="sm" disabled={confirm.isPending} onClick={() => confirm.mutate()}>
+        Looks right
+      </Button>
+      <ErrorText error={confirm.error} />
+    </div>
   )
 }

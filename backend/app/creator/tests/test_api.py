@@ -111,6 +111,14 @@ def test_end_to_end():
                 assert not res.is_error, res
                 bad = await c.call_tool("read_rows", {"table": "nope"})
                 assert bad.is_error
+                # brief drafting: the posts still missing one, the vocabulary in use, and the prompt
+                res = await c.call_tool("posts_needing_briefs", {"account_id": acc})
+                assert not res.is_error, res
+                need = res.structured_content or json.loads(res.content[0].text)
+                assert {"posts", "vocabulary", "enums"} <= set(need) and "hook_type" in need["vocabulary"]
+                assert all(p["account_id"] == acc for p in need["posts"]) and len(need["posts"]) == 2  # a and c; b was marked removed
+                prompt = await c.get_prompt("draft_briefs", {"account_id": str(acc)})
+                assert "needs_review" in prompt.messages[0].content.text
         asyncio.run(via_mcp())
         assert api.get("/api/v1/tables/accounts", params={"account_id": acc}).json()["data"]["rows"][0]["display_name"] == "Via MCP"
     finally:

@@ -15,7 +15,7 @@ export const Route = createFileRoute('/content_/new')({
       queryClient.ensureQueryData(schemaOptions),
     ]),
   component: function NewPost() {
-    const { plan } = Route.useSearch()
-    return <PostForm key={String(plan)} plan={plan} />
+    const { plan, date } = Route.useSearch()
+    return <PostForm key={`${plan}-${date}`} plan={plan} date={date} />
   },
 })

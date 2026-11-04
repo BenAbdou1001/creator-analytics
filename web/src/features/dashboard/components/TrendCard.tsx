@@ -42,7 +42,7 @@ export function TrendCard({ accounts, saved }: { accounts: AccountOverview[]; sa
   return (
     <Card className="min-w-0 gap-2 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">Performance</h2>
+        <h2 className="font-medium">Performance</h2>
         <Select
           size="sm"
           className="min-w-36"

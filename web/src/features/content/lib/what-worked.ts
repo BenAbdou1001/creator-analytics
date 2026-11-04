@@ -3,11 +3,11 @@ export type PerformanceRow = Record<string, unknown> & { brief_count: number }
 
 /** What a group is ranked by. Platforms report different numbers (LinkedIn: impressions, no views). */
 export const WHAT_WORKED_METRICS = [
-  ['views', 'Avg views'],
-  ['impressions', 'Avg impressions'],
-  ['engagements', 'Avg engagements'],
-  ['engagement_rate', 'Avg engagement rate'],
-  ['followers_3d', 'Avg new followers (3 days)'],
+  ['views', 'Average views'],
+  ['impressions', 'Average impressions'],
+  ['engagements', 'Average engagements'],
+  ['engagement_rate', 'Average engagement rate'],
+  ['followers_3d', 'Average new followers (3 days)'],
 ] as const
 export type WhatWorkedMetric = (typeof WHAT_WORKED_METRICS)[number][0]
 
@@ -121,4 +121,63 @@ export function untried(rows: PerformanceRow[], fields: string[], limit = 6): st
     .filter((c) => !tried.has(c.map(([k]) => k).join('\u0000')))
     .slice(0, limit)
     .map((c) => c.map(([, label]) => label).join(' · '))
+}
+
+// ---- timing: when a post went out, for the calendar and as "What worked" fields ----
+
+const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
+
+/**
+ * Whether a timestamp carries a real time. Exports that only give a date (LinkedIn) are stored at 00:00 UTC, so that
+ * instant reads as "date only". ponytail: a post really made at 00:00:00 UTC looks date-only; add a flag if it matters.
+ */
+export function hasTime(iso: string): boolean {
+  const d = new Date(iso)
+  return d.getUTCHours() + d.getUTCMinutes() + d.getUTCSeconds() > 0
+}
+
+/** The calendar day a post belongs to, YYYY-MM-DD: local when its time is known, else the stored date. */
+export function postDay(iso: string): string {
+  if (!hasTime(iso)) return iso.slice(0, 10)
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export function timeOfDay(d: Date): 'morning' | 'afternoon' | 'evening' | 'night' {
+  const h = d.getHours()
+  return h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 17 ? 'afternoon' : h >= 17 && h < 22 ? 'evening' : 'night'
+}
+
+/** Rows plus `weekday` (from the date) and `time_of_day` (only when the time is known), to group on like brief fields. */
+export function withTiming<T extends Record<string, unknown>>(rows: T[]): (T & { weekday: string | null; time_of_day: string | null })[] {
+  return rows.map((r) => {
+    const iso = typeof r.published_at === 'string' ? r.published_at : null
+    if (!iso) return { ...r, weekday: null, time_of_day: null }
+    const day = postDay(iso)
+    return {
+      ...r,
+      weekday: WEEKDAYS[new Date(`${day}T12:00:00Z`).getUTCDay()],
+      time_of_day: hasTime(iso) ? timeOfDay(new Date(iso)) : null,
+    }
+  })
+}
+
+/** The Monday-to-Sunday weeks covering a month (YYYY-MM), as local dates. */
+export function weeksOf(month: string): Date[][] {
+  const [y, m] = month.split('-').map(Number)
+  const lead = (new Date(y, m - 1, 1).getDay() + 6) % 7 // days shown from the previous month
+  const last = new Date(y, m, 0)
+  const days: Date[] = []
+  for (let i = 0; ; i++) {
+    const d = new Date(y, m - 1, 1 - lead + i)
+    if (d > last && days.length % 7 === 0) break
+    days.push(d)
+  }
+  return Array.from({ length: days.length / 7 }, (_, w) => days.slice(w * 7, w * 7 + 7))
+}
+
+export const shiftMonth = (month: string, by: number) => {
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(y, m - 1 + by, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }

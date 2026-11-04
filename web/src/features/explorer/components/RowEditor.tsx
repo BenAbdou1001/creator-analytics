@@ -32,7 +32,7 @@ export function RowEditor({ table, meta, enums, draft, onChange, onSave, onCance
             onSave()
           }}
         >
-          <div className="text-sm font-semibold">{keyLabel ? `Edit ${table} · ${keyLabel}` : `New ${table} row`}</div>
+          <div className="text-sm font-medium">{keyLabel ? `Edit ${table} · ${keyLabel}` : `New ${table} row`}</div>
           <FormGrid>
             {columns.map((col) => {
               const kind = fieldKind(col, enums)

@@ -12,7 +12,7 @@ export const SECTIONS: [string, string[]][] = [
 ]
 
 /** The content_items columns a person edits; the rest belong to sync/import. */
-export const POST_FIELDS = ['account_id', 'external_id', 'content_type', 'title', 'caption', 'url', 'published_at', 'visibility',
+export const POST_FIELDS = ['account_id', 'external_id', 'content_type', 'title', 'caption', 'url', 'published_at', 'scheduled_for', 'visibility',
   'language', 'duration_seconds', 'thumbnail_url', 'is_collab']
 
 /** Long prose: a textarea instead of a one-line input. */

@@ -144,3 +144,5 @@ class ContentBrief(MappedBase):
     hypothesis: Mapped[str | None]
     verdict: Mapped[enums.ExperimentVerdict | None] = mapped_column(experiment_verdict_t)
     verdict_notes: Mapped[str | None]
+    # drafted by an agent from the post's text, waiting for a person to check it
+    needs_review: Mapped[bool] = mapped_column(server_default=sa.false())

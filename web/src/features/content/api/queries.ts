@@ -74,3 +74,33 @@ export const performanceOptions = queryOptions({
   ...rowsOptions<ContentPerformanceDto>('v_content_performance', { limit: 1000 }),
   select: (page) => page.rows,
 })
+
+/** content_items fields the calendar draws. */
+export interface CalendarItemDto {
+  content_id: number
+  account_id: number
+  platform: import('@/shared/types').Platform
+  content_type: string
+  title: string | null
+  published_at: string | null
+  scheduled_for: string | null
+  visibility: string
+}
+
+const calendarRows = (params: Record<string, string | number | boolean>) =>
+  queryOptions({
+    ...rowsOptions<CalendarItemDto>('content_items', { limit: 1000, desc: false, ...params }),
+    select: (page) => page.rows,
+  })
+
+/** Posts published between two instants (ISO). */
+export const publishedBetweenOptions = (from: string, to: string, accountId?: number) =>
+  calendarRows({ published_at__gte: from, published_at__lte: to, order_by: 'published_at', ...(accountId ? { account_id: accountId } : {}) })
+
+/** Planned posts scheduled between two instants (ISO). */
+export const plannedBetweenOptions = (from: string, to: string, accountId?: number) =>
+  calendarRows({ visibility: 'draft', scheduled_for__gte: from, scheduled_for__lte: to, order_by: 'scheduled_for', ...(accountId ? { account_id: accountId } : {}) })
+
+/** Planned posts with no date yet. */
+export const unscheduledOptions = (accountId?: number) =>
+  calendarRows({ visibility: 'draft', scheduled_for__isnull: true, order_by: 'content_id', ...(accountId ? { account_id: accountId } : {}) })
