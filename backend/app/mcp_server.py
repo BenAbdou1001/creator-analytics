@@ -73,7 +73,9 @@ async def create_rows(table: str, rows: list[dict[str, Any]]) -> list[dict[str, 
     "main_points": ["capture", "triage", "review"], "cta": "Follow for part 2", "cta_placement": "end",
     "voiceover": true, "audio_quality": 4, "storytelling": false}]).
     Enums: content_format, audience_awareness, cta_placement (values in describe_schema); audio_quality is 1-5.
-    Free-text fields (topic, hook_type, content_pillar...) are grouped on: reuse existing spellings, lowercase."""
+    Free-text fields (topic, hook_type, content_pillar...) are grouped on: reuse existing spellings, lowercase.
+    Experiments: `hypothesis` (what this version should do), later `verdict` (confirmed|refuted|inconclusive). A planned,
+    unpublished post is a content_items row with visibility "draft" and external_id "draft-<anything unique>"."""
     async with transaction() as db:
         return await table_service.create(db=db, table=table, rows=rows)
 

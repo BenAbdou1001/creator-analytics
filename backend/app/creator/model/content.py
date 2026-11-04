@@ -11,6 +11,7 @@ from app.creator.model.types import (
     content_format_t,
     content_type_t,
     cta_placement_t,
+    experiment_verdict_t,
     platform_t,
     visibility_t,
 )
@@ -139,3 +140,7 @@ class ContentBrief(MappedBase):
     caption_cta: Mapped[str | None]
     notes: Mapped[str | None]
     updated_at: Mapped[datetime] = mapped_column(server_default=NOW, onupdate=NOW)
+    # experiment: what this version is expected to do, and whether the numbers agreed
+    hypothesis: Mapped[str | None]
+    verdict: Mapped[enums.ExperimentVerdict | None] = mapped_column(experiment_verdict_t)
+    verdict_notes: Mapped[str | None]

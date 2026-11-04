@@ -15,6 +15,7 @@ import { schemaOptions } from '@/shared/lib/tables'
 import { CONTENT_PAGE_SIZE, contentListOptions } from '../api/queries'
 import type { ContentSearch } from '../types'
 import { ContentTable } from './ContentTable'
+import { Experiments } from './Experiments'
 import { WhatWorked } from './WhatWorked'
 
 const route = getRouteApi('/content')
@@ -43,11 +44,17 @@ export function ContentPage() {
           value={String(search.accountId ?? '')}
           onValueChange={(v) => go({ accountId: v ? Number(v) : undefined })} placeholder="All accounts" options={accounts.rows.map((a) => [String(a.accountId), accountLabel(a)] as const)} />
         <Select aria-label="Type" value={search.contentType ?? ''} onValueChange={(v) => go({ contentType: v || undefined })} placeholder="All types" options={humanOptions(schema.enums.content_type_t)} />
+        <Button asChild variant="outline">
+          <Link to="/content/new">Add published post</Link>
+        </Button>
         <Button asChild>
-          <Link to="/content/new">New post</Link>
+          <Link to="/content/new" search={{ plan: true }}>
+            Plan a post
+          </Link>
         </Button>
       </PageHeader>
 
+      <Experiments accountId={search.accountId} />
       <WhatWorked accountId={search.accountId} />
       <ErrorText error={error} />
       <Card className="gap-0 py-0">

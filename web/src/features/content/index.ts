@@ -9,5 +9,5 @@ export {
   postDatesOptions,
   topContentOptions,
 } from './api/queries'
-export { validateContentSearch, validatePostEditSearch, validatePostSearch } from './types'
+export { validateContentSearch, validateNewPostSearch, validatePostEditSearch, validatePostSearch } from './types'
 export type { ContentSearch, ContentSummary } from './types'

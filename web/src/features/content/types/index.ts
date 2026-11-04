@@ -66,6 +66,11 @@ export function validatePostEditSearch(s: Record<string, unknown>): { version?: 
 /** The posts list as the menu opens it. */
 export const ALL_POSTS: ContentSearch = { orderBy: 'publishedAt', offset: 0 }
 
+/** /content/new?plan=1: plan a post before publishing it. */
+export function validateNewPostSearch(s: Record<string, unknown>): { plan?: boolean } {
+  return { plan: s.plan === true || s.plan === 1 || s.plan === '1' || s.plan === 'true' ? true : undefined }
+}
+
 /** /content/$id?brief=: which brief version is shown. */
 export function validatePostSearch(s: Record<string, unknown>): { brief?: number } {
   return { brief: s.brief ? Number(s.brief) : undefined }

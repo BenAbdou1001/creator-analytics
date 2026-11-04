@@ -192,3 +192,9 @@ class CtaPlacement(StrEnum):
     end = 'end'
     throughout = 'throughout'
     caption_only = 'caption_only'
+
+
+class ExperimentVerdict(StrEnum):  # was the brief's hypothesis borne out by the numbers?
+    confirmed = 'confirmed'
+    refuted = 'refuted'
+    inconclusive = 'inconclusive'

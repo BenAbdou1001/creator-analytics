@@ -115,6 +115,9 @@ export type ContentPerformanceDto = ContentSummaryDto &
     engagement_rate: number | null
     brief_count: number
     brief_id: number | null
+    /** followers gained on publish day + 2 days, split across posts in that window; null without daily data */
+    followers_3d: number | null
+    followers_3d_posts: number
   }
 
 export interface ContentLatestMetricDto {
