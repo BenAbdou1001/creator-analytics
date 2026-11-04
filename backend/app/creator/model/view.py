@@ -3,7 +3,7 @@
 import sqlalchemy as sa
 
 from app.creator.model.content import ContentBrief
-from app.creator.model.types import content_type_t, period_kind_t, platform_t, relation_t
+from app.creator.model.types import content_type_t, period_kind_t, platform_t, relation_t, visibility_t
 from common.model import view
 
 _num = sa.Numeric(asdecimal=False)
@@ -48,4 +48,7 @@ v_content_performance = view(
     *(sa.Column(c.name, c.type) for c in v_content_summary.columns),
     sa.Column('caption_length', sa.Integer), sa.Column('engagement_rate', _num), sa.Column('brief_count', sa.Integer),
     *(sa.Column(c.name, c.type) for c in _brief_cols),
+    # followers gained in the 3 days after publishing, split across posts_in_window posts; NULL without daily data
+    sa.Column('followers_3d', _num), sa.Column('followers_3d_posts', sa.Integer),
+    sa.Column('visibility', visibility_t),  # 'draft' = a planned post, left out of averages
 )

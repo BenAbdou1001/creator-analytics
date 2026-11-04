@@ -51,10 +51,9 @@ export function FieldControl({ col, kind, options, value, onChange, list }: {
     default:
       return (
         <Input
-          type={kind === 'number' ? 'number' : kind === 'date' ? 'date' : 'text'}
+          type={kind === 'number' ? 'number' : kind === 'date' ? 'date' : kind === 'datetime' ? 'datetime-local' : 'text'}
           step={kind === 'number' ? 'any' : undefined}
           dir={kind === 'text' ? 'auto' : undefined}
-          placeholder={col.type.startsWith('timestamp') ? '2026-01-31T09:00:00+00:00' : undefined}
           required={required}
           list={list}
           value={value as string}

@@ -60,7 +60,7 @@ function AppLayout() {
       >
         Skip to content
       </a>
-      <div className="flex h-dvh flex-col-reverse gap-2 bg-linear-to-br from-background to-[#080e2f] p-2 not-dark:to-background md:flex-row">
+      <div className="flex h-dvh flex-col-reverse gap-2 bg-background p-2 md:flex-row">
         <Rail />
         <main ref={main} id="main" tabIndex={-1} className="min-h-0 min-w-0 flex-1 overflow-y-auto rounded-lg bg-panel px-4 pb-8 outline-none md:px-8">
           <Outlet />

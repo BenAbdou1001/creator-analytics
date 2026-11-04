@@ -25,11 +25,15 @@ import { versionLabel } from './PostPage'
 
 const pick = (cols: ColumnDto[], names: string[]) => names.flatMap((n) => cols.find((c) => c.name === n) ?? [])
 
+/** A planned post isn't on the platform yet: these come from the real post when it's imported and linked. */
+const PUBLISH_FIELDS = new Set(['external_id', 'url', 'published_at', 'visibility', 'duration_seconds', 'thumbnail_url'])
+
 /**
  * Add a post, or edit one: its own fields plus one brief. `version` picks the brief to edit; 'new' (or a post with no
- * brief yet) saves a new version, prefilled from the latest so only what changed is typed.
+ * brief yet) saves a new version, prefilled from the latest so only what changed is typed. `plan` (or editing a draft)
+ * is a post not published yet: brief + hypothesis first, platform fields later.
  */
-export function PostForm({ id, version: briefParam }: { id?: number; version?: number | 'new' }) {
+export function PostForm({ id, version: briefParam, plan: planParam, date }: { id?: number; version?: number | 'new'; plan?: boolean; date?: string }) {
   const editing = id !== undefined
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -40,17 +44,23 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
   const perf = useQuery(performanceOptions)
   const enums = schema.enums
 
-  const postCols = pick(schema.tables.content_items.columns, POST_FIELDS.filter((n) => !(editing && n === 'account_id')))
+  const plan = planParam || row?.visibility === 'draft'
+  const postCols = pick(schema.tables.content_items.columns, POST_FIELDS.filter((n) => !(editing && n === 'account_id') && !(plan && PUBLISH_FIELDS.has(n)) && (plan || n !== 'scheduled_for')))
   const briefCols = pick(schema.tables.content_briefs.columns, SECTIONS.flatMap(([, n]) => n))
   const list = editing ? briefs : []
   const target = briefParam === 'new' ? undefined : (list.find((b) => b.brief_id === briefParam) ?? list[0])
 
-  const [post, setPost] = useState<FormValues>(() => formValues(postCols, enums, ['content_id'], editing ? row : null))
+  const [post, setPost] = useState<FormValues>(() => {
+    const values = formValues(postCols, enums, ['content_id'], editing ? row : null)
+    // planned from a calendar day: that day, 9:00 local, ready to adjust
+    return date && !editing && 'scheduled_for' in values ? { ...values, scheduled_for: `${date}T09:00` } : values
+  })
   const [postInitial] = useState(() => (editing ? post : null))
   const [brief, setBrief] = useState<FormValues>(() =>
     target
       ? formValues(briefCols, enums, ['brief_id'], target)
-      : { ...formValues(briefCols, enums, ['brief_id'], list[0] ?? null), label: '', active_from: '' },
+      : // a new version is a new experiment: its hypothesis and verdict start empty
+        { ...formValues(briefCols, enums, ['brief_id'], list[0] ?? null), label: '', active_from: '', hypothesis: '', verdict: '', verdict_notes: '' },
   )
   const [briefInitial] = useState(() => (target ? brief : null))
   const created = useRef<number>(undefined) // a new post saved before its brief failed: retry only the brief
@@ -62,12 +72,15 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
       if (cid === undefined) {
         const account = accounts.rows.find((a) => a.accountId === Number(post.account_id))
         if (!account) throw new Error('Choose an account')
-        cid = (await tablesService.create<{ content_id: number }>('content_items', { ...postBody, platform: account.platform })).content_id
+        // a plan has no platform id yet: a placeholder keeps (platform, external_id) unique until it's linked
+        const draft = plan ? { external_id: `draft-${crypto.randomUUID()}`, visibility: 'draft' } : {}
+        cid = (await tablesService.create<{ content_id: number }>('content_items', { ...postBody, ...draft, platform: account.platform })).content_id
         created.current = cid
       } else if (editing && Object.keys(postBody).length) {
         await tablesService.update('content_items', { content_id: cid }, postBody)
       }
-      const briefBody = rowBody(briefCols, enums, brief, briefInitial)
+      // saving an agent's draft after looking at it is the review
+      const briefBody = { ...rowBody(briefCols, enums, brief, briefInitial), ...(target?.needs_review ? { needs_review: false } : {}) }
       if (Object.keys(briefBody).length) {
         if (target) await tablesService.update('content_briefs', { brief_id: target.brief_id }, briefBody)
         else await tablesService.create<ContentBriefDto>('content_briefs', { ...briefBody, content_id: cid })
@@ -81,9 +94,14 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
   })
 
 
-  if (editing && !row) return <PageHeader title="Post not found" description="This post is not in your archive." />
+  if (editing && !row) return <PageHeader title="Post not found" description="This post is not in your archive" />
   const back = editing ? ({ to: '/content/$id', params: { id: String(id) } } as const) : ({ to: '/content', search: ALL_POSTS } as const)
-  const title = editing ? `Edit ${String(row?.title ?? 'post')}` : 'New post'
+  const title = editing ? `Edit ${String(row?.title ?? 'post')}` : plan ? 'Plan a post' : 'New post'
+  const subtitle = plan
+    ? 'Write the brief and what you expect before posting. Link it to the real post after the next import.'
+    : editing
+      ? 'Changes here may be overwritten by the next sync or import of this post.'
+      : 'For a post the platform export missed'
 
   const groups: { name: string; sections: SectionDef[] }[] = [
     {
@@ -158,9 +176,9 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
           </Link>
         </Button>
         <div className="mr-auto min-w-0">
-          <h1 className="truncate text-lg font-semibold">{title}</h1>
+          <h1 className="truncate text-lg font-medium">{title}</h1>
           <p className="truncate text-xs text-muted-foreground">
-            {editing ? 'Changes here may be overwritten by the next sync or import of this post.' : 'For a post the platform export missed.'}
+            {subtitle}
           </p>
         </div>
         {list.length > 0 && (
@@ -177,7 +195,7 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
           <Link {...back}>Cancel</Link>
         </Button>
         <Button disabled={save.isPending}>
-          {save.isPending ? 'Saving…' : editing ? (target ? 'Save changes' : 'Save as new version') : 'Add post'}
+          {save.isPending ? 'Saving…' : editing ? (target ? 'Save changes' : 'Save as new version') : plan ? 'Save plan' : 'Add post'}
         </Button>
       </header>
       {save.error != null && (
@@ -190,7 +208,7 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
         <nav aria-label="Sections" className="hidden w-60 shrink-0 overflow-y-auto border-r p-4 lg:block">
           {groups.map((g) => (
             <div key={g.name} className="mb-5">
-              <div className="mb-1 px-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{g.name}</div>
+              <div className="mb-1 px-2 text-xs font-medium text-muted-foreground">{g.name}</div>
               {g.sections.map((s) => (
                 <button
                   key={s.title}
@@ -210,7 +228,7 @@ export function PostForm({ id, version: briefParam }: { id?: number; version?: n
           <div className="mx-auto grid max-w-5xl gap-8 p-4 md:p-8">
             {groups.map((g) => (
               <div key={g.name} className="grid gap-4">
-                <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{g.name}</h2>
+                <h2 className="text-xs font-medium text-muted-foreground">{g.name}</h2>
                 {g.sections.map((s) => (
                   <Card key={s.title} id={anchor(g.name, s.title)} className="scroll-mt-4 gap-4 border">
                     <CardHeader className="flex items-center justify-between">

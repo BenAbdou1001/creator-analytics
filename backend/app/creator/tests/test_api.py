@@ -111,6 +111,14 @@ def test_end_to_end():
                 assert not res.is_error, res
                 bad = await c.call_tool("read_rows", {"table": "nope"})
                 assert bad.is_error
+                # brief drafting: the posts still missing one, the vocabulary in use, and the prompt
+                res = await c.call_tool("posts_needing_briefs", {"account_id": acc})
+                assert not res.is_error, res
+                need = res.structured_content or json.loads(res.content[0].text)
+                assert {"posts", "vocabulary", "enums"} <= set(need) and "hook_type" in need["vocabulary"]
+                assert all(p["account_id"] == acc for p in need["posts"]) and len(need["posts"]) == 2  # a and c; b was marked removed
+                prompt = await c.get_prompt("draft_briefs", {"account_id": str(acc)})
+                assert "needs_review" in prompt.messages[0].content.text
         asyncio.run(via_mcp())
         assert api.get("/api/v1/tables/accounts", params={"account_id": acc}).json()["data"]["rows"][0]["display_name"] == "Via MCP"
     finally:
@@ -143,6 +151,11 @@ def test_content_briefs():
         assert api.get("/api/v1/tables/content_briefs", params={"brief_id": v1.json()["data"]["brief_id"]}
                        ).json()["data"]["rows"][0]["main_points"] == ["a", "b"]
 
+        # experiment fields: a hypothesis and its verdict, visible on the performance row
+        assert api.patch("/api/v1/tables/content_briefs", params={"brief_id": v2["brief_id"]}, json={
+            "hypothesis": "bold claims beat questions", "verdict": "confirmed"}).status_code == 200
+        assert (perf()[0]["hypothesis"], perf()[0]["verdict"], perf()[0]["visibility"]) == ("bold claims beat questions", "confirmed", "unknown")
+        assert api.patch("/api/v1/tables/content_briefs", params={"brief_id": v2["brief_id"]}, json={"verdict": "maybe"}).status_code == 400
         assert api.post("/api/v1/tables/content_briefs", json={"content_id": cid, "content_format": "nope"}).status_code == 400
         assert api.post("/api/v1/tables/content_briefs", json={"content_id": cid, "audio_quality": 9}).status_code == 409
 
@@ -150,6 +163,35 @@ def test_content_briefs():
         api.post("/api/v1/sync/content", json={"account_id": acc, "items": [
             {"external_id": f"{handle}-a", "content_type": "short", "metrics": {"views": 300}}]})
         assert perf()[0]["hook_type"] == "bold claim" and perf()[0]["views"] == 300
+
+        # follower lift: publish day + 2 days of daily net followers, split between posts sharing the window
+        assert perf()[0]["followers_3d"] is None  # no publish date, no daily data
+        api.post("/api/v1/sync/content", json={"account_id": acc, "items": [
+            {"external_id": f"{handle}-a", "content_type": "short", "published_at": "2026-03-01"},
+            {"external_id": f"{handle}-b", "content_type": "short", "published_at": "2026-03-02"},
+            {"external_id": f"{handle}-c", "content_type": "short", "published_at": "2026-03-20"}]})
+        days = [{"metric": "net_followers", "period_start": f"2026-03-0{d}", "value": v} for d, v in ((1, 6), (2, 2), (3, 4), (4, 100))]
+        assert api.post("/api/v1/sync/account-metrics", json={"account_id": acc, "rows": days}).status_code == 200
+        lift = {r["title"] or r["content_id"]: (r["followers_3d"], r["followers_3d_posts"]) for r in
+                api.get("/api/v1/tables/v_content_performance", params={"account_id": acc}).json()["data"]["rows"]}
+        by_id = {r["external_id"]: r["content_id"] for r in
+                 api.get("/api/v1/tables/content_items", params={"account_id": acc}).json()["data"]["rows"]}
+        assert lift[by_id[f"{handle}-a"]] == (6, 2)  # (6+2+4) / 2 posts
+        assert lift[by_id[f"{handle}-b"]] == (53, 2)  # (2+4+100) / 2 posts
+        assert lift[by_id[f"{handle}-c"]] == (None, 1)  # days not saved: unknown, not 0
+
+        # a planned post (draft with a placeholder id) linked to the real one: its brief moves, the plan goes
+        draft = api.post("/api/v1/tables/content_items", json={"account_id": acc, "platform": "tiktok", "content_type": "short",
+                                                              "external_id": f"draft-{handle}", "visibility": "draft"}).json()["data"]
+        plan = api.post("/api/v1/tables/content_briefs", json={"content_id": draft["content_id"], "hypothesis": "h"}).json()["data"]
+        planned = api.get("/api/v1/tables/v_content_performance", params={"content_id": draft["content_id"]}).json()["data"]["rows"][0]
+        assert (planned["visibility"], planned["hypothesis"]) == ("draft", "h")
+        real = by_id[f"{handle}-c"]
+        assert api.patch("/api/v1/tables/content_briefs", params={"brief_id": plan["brief_id"]},
+                         json={"content_id": real, "active_from": "2026-03-20T00:00:00Z"}).status_code == 200
+        assert api.delete("/api/v1/tables/content_items", params={"content_id": draft["content_id"]}).status_code == 200
+        moved = api.get("/api/v1/tables/v_content_performance", params={"content_id": real}).json()["data"]["rows"][0]
+        assert (moved["brief_id"], moved["hypothesis"]) == (plan["brief_id"], "h")
 
         api.delete("/api/v1/tables/content_items", params={"content_id": cid})
         assert api.get("/api/v1/tables/content_briefs", params={"content_id": cid}).json()["data"]["total"] == 0

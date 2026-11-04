@@ -32,7 +32,7 @@ export function CoverageList({ accountId }: { accountId?: number }) {
   if (!rows.length) return null
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-semibold">Daily history you hold</h2>
+      <h2 className="mb-3 text-sm font-medium">Daily history you hold</h2>
       <Card className="p-5">
         <ul className="grid gap-3">
           {rows.map((m) => {

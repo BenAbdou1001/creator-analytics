@@ -7,41 +7,41 @@
 
 /* Dark is the default. Components use these role names, never hex values. See docs/brand/GUIDE.md. */
 :root {
-  --background: #eef0fb;
-  --panel: #f8f9fe;
+  --background: #f4f4f5;
+  --panel: #fafafa;
   --card: #ffffff;
-  --foreground: #0d121c;
-  --muted-foreground: #565d78;
-  --muted: #e9ebf7;
-  --accent: #e2e0fe;
+  --foreground: #171717;
+  --muted-foreground: #5c5c62;
+  --muted: #efeff1;
+  --accent: #e7e7ea;
   --primary: #5b47e9;
   --primary-foreground: #ffffff;
   --link: #4f3be0;
   --chart: #5b47e9;
   --success: #0b7a50;
-  --warning: #c01a78;
+  --warning: #b45309;
   --destructive: #c62828;
-  --border: rgb(13 18 28 / 10%);
-  --input: rgb(13 18 28 / 16%);
+  --border: rgb(23 23 23 / 9%);
+  --input: rgb(23 23 23 / 14%);
 }
 
 .dark {
-  --background: #0b1141;
-  --panel: #0d121c;
-  --card: #151823;
-  --foreground: #f5f6fb;
-  --muted-foreground: #9aa1b8;
-  --muted: #1e2230;
-  --accent: #272463;
+  --background: #0f0f10;
+  --panel: #141415;
+  --card: #19191b;
+  --foreground: #ededed;
+  --muted-foreground: #a1a1a6;
+  --muted: #232325;
+  --accent: #2a2a2d;
   --primary: #6556fb;
   --primary-foreground: #ffffff;
   --link: #a69dff;
   --chart: #8070fa;
-  --success: #34d399;
-  --warning: #f472b6;
+  --success: #4cc38a;
+  --warning: #f5a524;
   --destructive: #f87171;
-  --border: rgb(255 255 255 / 8%);
-  --input: rgb(255 255 255 / 12%);
+  --border: rgb(237 237 237 / 8%);
+  --input: rgb(237 237 237 / 12%);
 }
 
 @theme inline {
@@ -55,7 +55,7 @@
   --text-2xl--line-height: 2.125rem;
   --text-3xl: 2rem;
   --text-3xl--line-height: 2.5rem;
-  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-panel: var(--panel);

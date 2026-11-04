@@ -8,7 +8,7 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
 }
 
 /** Enum values for people: 'text_post' -> 'Text post'. */
-export const humanize = (v: string) => (v.charAt(0).toUpperCase() + v.slice(1)).replaceAll('_', ' ')
+export const humanize = (v: string) => (v.charAt(0).toUpperCase() + v.slice(1)).replaceAll('_', ' ').replace(/\bcta\b/i, 'CTA')
 
 /** [value, label] pairs for <Select>. */
 export const humanOptions = (values: readonly string[]) => values.map((v) => [v, humanize(v)] as const)

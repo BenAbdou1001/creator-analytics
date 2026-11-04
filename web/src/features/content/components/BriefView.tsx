@@ -15,12 +15,12 @@ export function BriefView({ brief, columns, enums }: { brief: ContentBriefDto; c
     ([, names]) => names.length,
   )
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-4">
       <p className="text-xs text-muted-foreground">Live since {prettyDay(brief.active_from)}</p>
       {sections.map(([title, names]) => (
-        <div key={title}>
-          <div className="mb-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{title}</div>
-          <dl className="grid grid-cols-[minmax(0,12rem)_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
+        <section key={title} className="border-t pt-4">
+          <h3 className="mb-2 text-sm font-medium">{title}</h3>
+          <dl className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
             {names.map((n) => (
               <div key={n} className="contents">
                 <dt className="text-muted-foreground">{humanize(n)}</dt>
@@ -30,7 +30,7 @@ export function BriefView({ brief, columns, enums }: { brief: ContentBriefDto; c
               </div>
             ))}
           </dl>
-        </div>
+        </section>
       ))}
     </div>
   )

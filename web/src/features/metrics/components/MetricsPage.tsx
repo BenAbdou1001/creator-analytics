@@ -24,7 +24,7 @@ export function MetricsPage() {
     <>
       <PageHeader
         title="Metrics"
-        description="Every number the platform dashboards show, how long each platform keeps it, and where to export it."
+        description="Every number the platform dashboards show, how long each platform keeps it, and where to export it"
       >
         <Select aria-label="Platform" value={search.platform ?? ''} onValueChange={(v) => go({ platform: v || undefined })} placeholder="All platforms" options={platformOptions(schema.enums.platform_t)} />
         <Select aria-label="Applies to" value={search.scope ?? ''} onValueChange={(v) => go({ scope: v || undefined })} placeholder="Everything" options={humanOptions(schema.enums.metric_scope_t)} />

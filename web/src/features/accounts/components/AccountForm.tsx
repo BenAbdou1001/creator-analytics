@@ -20,13 +20,14 @@ export const EMPTY_ACCOUNT: AccountInput = {
 }
 
 const TEXT_FIELDS = [
-  ['handle', 'Handle *'],
+  ['handle', 'Handle'],
   ['displayName', 'Display name'],
   ['profileUrl', 'Profile URL'],
   ['externalId', 'Channel / member ID'],
 ] as const
 
-export function AccountForm({ value, onChange, editing, pending, error, onSubmit, onCancel }: {
+export function AccountForm({ title, value, onChange, editing, pending, error, onSubmit, onCancel }: {
+  title: string
   value: AccountInput
   onChange: (v: AccountInput) => void
   editing: boolean
@@ -48,6 +49,7 @@ export function AccountForm({ value, onChange, editing, pending, error, onSubmit
             onSubmit()
           }}
         >
+          <h2 className="text-sm font-medium">{title}</h2>
           <FormGrid>
             <Field label="Platform">
               <Select className="w-full" value={value.platform} onValueChange={(v) => set('platform', v as AccountInput['platform'])} options={platformOptions(schema.enums.platform_t)} />

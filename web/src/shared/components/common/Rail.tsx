@@ -8,14 +8,14 @@ import type { Theme } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
 import { BrandMark } from './BrandMark'
 
-const ITEM = 'flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-md py-2 text-[11px] font-medium transition-colors'
+const ITEM = 'flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-md py-2 text-xs font-medium transition-colors'
 
 function RailLink({ item, active }: { item: (typeof NAV | typeof NAV_REFERENCE)[number]; active: boolean }) {
   return (
     <Link
       to={item.to}
       aria-current={active ? 'page' : undefined}
-      className={cn(ITEM, active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+      className={cn(ITEM, active ? 'bg-muted text-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}
     >
       <item.icon className="size-5" aria-hidden="true" />
       {item.label}
@@ -31,14 +31,15 @@ function ThemeButton() {
   return (
     <button
       type="button"
-      className={cn(ITEM, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+      aria-label={`Switch to ${next} theme`}
+      title={`Switch to ${next} theme`}
+      className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:mt-2"
       onClick={() => {
         setTheme(next)
         set(next)
       }}
     >
-      <Icon className="size-5" aria-hidden="true" />
-      {next === 'light' ? 'Light' : 'Dark'}
+      <Icon className="size-4" aria-hidden="true" />
     </button>
   )
 }
@@ -55,17 +56,17 @@ export function Rail() {
       <Link to="/" aria-label={BRAND} className="hidden shrink-0 py-2 md:block">
         <BrandMark />
       </Link>
-      <div className="flex gap-1 md:mt-3 md:flex-col">
+      <div className="flex gap-1 md:mt-2 md:flex-col">
         {NAV.map((item) => (
           <RailLink key={item.to} item={item} active={active(item.to)} />
         ))}
       </div>
-      <div className="flex gap-1 md:mt-auto md:flex-col">
+      <div className="flex gap-1 border-l pl-1 md:mt-auto md:flex-col md:border-t md:border-l-0 md:pt-2 md:pl-0">
         {NAV_REFERENCE.map((item) => (
           <RailLink key={item.to} item={item} active={active(item.to)} />
         ))}
-        <ThemeButton />
       </div>
+      <ThemeButton />
     </nav>
   )
 }

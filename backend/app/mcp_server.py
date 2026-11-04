@@ -13,6 +13,7 @@ from typing import Any
 
 from mcp.server.mcpserver import MCPServer
 
+from app.creator.service.brief_service import brief_service
 from app.creator.service.dashboard_service import dashboard_service
 from app.creator.service.import_service import import_service
 from app.creator.service.sync_service import sync_service
@@ -27,7 +28,8 @@ mcp = MCPServer(
         "Metrics are long/narrow facts keyed by metric_definitions (platform, scope, metric_key); "
         "prefer the sync_* tools for bringing in dashboard data because they upsert, resolve metric "
         "keys/labels and record provenance in import_batches. Views (v_*) are read-only. Platforms delete "
-        "their history: call expiring_metrics to see what must be exported next."
+        "their history: call expiring_metrics to see what must be exported next. To describe posts (content_briefs), call "
+        "posts_needing_briefs or use the draft_briefs prompt; drafts you write get needs_review=true."
     ),
 )
 
@@ -73,7 +75,9 @@ async def create_rows(table: str, rows: list[dict[str, Any]]) -> list[dict[str, 
     "main_points": ["capture", "triage", "review"], "cta": "Follow for part 2", "cta_placement": "end",
     "voiceover": true, "audio_quality": 4, "storytelling": false}]).
     Enums: content_format, audience_awareness, cta_placement (values in describe_schema); audio_quality is 1-5.
-    Free-text fields (topic, hook_type, content_pillar...) are grouped on: reuse existing spellings, lowercase."""
+    Free-text fields (topic, hook_type, content_pillar...) are grouped on: reuse existing spellings, lowercase.
+    Experiments: `hypothesis` (what this version should do), later `verdict` (confirmed|refuted|inconclusive). A planned,
+    unpublished post is a content_items row with visibility "draft" and external_id "draft-<anything unique>"."""
     async with transaction() as db:
         return await table_service.create(db=db, table=table, rows=rows)
 
@@ -192,6 +196,39 @@ async def sync_revenue(account_id: int, rows: list[dict[str, Any]], source_kind:
     async with transaction() as db:
         return await sync_service.sync_revenue(db=db, account_id=account_id, rows=rows, source_kind=source_kind,
                                                source_label=source_label)
+
+
+@mcp.tool()
+async def posts_needing_briefs(account_id: int | None = None, limit: int = 20) -> dict[str, Any]:
+    """Posts with no brief yet (newest first: text, url, hashtags), plus what you need to draft one consistently:
+    `vocabulary` = values already used per free-text brief field (reuse these spellings), `enums` = allowed values.
+    Draft with create_rows("content_briefs", ...) and needs_review: true. See the draft_briefs prompt."""
+    async with transaction() as db:
+        posts = await brief_service.needing_briefs(db=db, account_id=account_id, limit=limit)
+        vocabulary = await brief_service.vocabulary(db=db)
+    enums = table_service.schema()['enums']
+    return {'posts': posts, 'vocabulary': vocabulary,
+            'enums': {k: enums[k] for k in ('content_format_t', 'audience_awareness_t', 'cta_placement_t')}}
+
+
+@mcp.prompt()
+def draft_briefs(account_id: str = "") -> str:
+    """Draft a brief for every post that has none, for the owner to review in the app."""
+    scope = f"account {account_id}" if account_id else "every account"
+    return f"""Draft content briefs for the posts of {scope} that have none.
+
+1. Call posts_needing_briefs({f"account_id={account_id}" if account_id else ""}). It returns the posts, the vocabulary
+   already in use and the allowed enum values.
+2. For each post, read its full text. If `caption` is empty or only a first line, open its `url` (public post page)
+   and read the whole post. If you can't get the text, skip the post and say so.
+3. Fill only what the text shows. Leave a field out rather than guess: no audio/visual/editing fields for text
+   posts, no audience_awareness unless it is obvious. Lists (main_points, transitions) are short phrases.
+4. Free-text fields are grouped on: reuse a vocabulary value when one fits, otherwise a new short lowercase value.
+5. Insert with create_rows("content_briefs", [...]) one row per post: content_id, label "drafted by agent",
+   active_from = the post's published_at, needs_review = true, plus the fields. If the caption was missing, also
+   update_row("content_items", {{"content_id": ...}}, {{"caption": full text}}).
+6. Finish with a short table: post, topic, hook_type, content_format, and anything you were unsure about.
+The owner reviews each draft on its post page; never set needs_review to false yourself."""
 
 
 def main():

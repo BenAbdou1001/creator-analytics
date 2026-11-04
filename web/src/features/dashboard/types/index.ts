@@ -48,15 +48,17 @@ export interface TimeseriesParams {
 export interface TodaySearch {
   account?: number
   metric?: string
-  from?: string
-  to?: string
+  range?: TrendRange
 }
+
+/** Chart period, counted back from today. Absent = all time. */
+export const TREND_RANGES = { '30d': ['Last 30 days', 30], '90d': ['Last 90 days', 90], '1y': ['Last 12 months', 365] } as const
+export type TrendRange = keyof typeof TREND_RANGES
 
 export function validateTodaySearch(s: Record<string, unknown>): TodaySearch {
   return {
     account: s.account ? Number(s.account) : undefined,
     metric: (s.metric as string) || undefined,
-    from: (s.from as string) || undefined,
-    to: (s.to as string) || undefined,
+    range: (s.range as string) in TREND_RANGES ? (s.range as TrendRange) : undefined,
   }
 }

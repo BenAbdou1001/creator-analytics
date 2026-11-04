@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { DataTable } from '@/shared/components/common/DataTable'
-import { PlatformBadge } from '@/shared/components/common/PlatformBadge'
+import { PlatformTile } from '@/shared/components/common/PlatformBadge'
 import { Sounding } from '@/shared/components/common/Sounding'
-import { humanize, prettyDay } from '@/shared/lib/format'
+import { PLATFORM_LABEL, humanize, prettyDay } from '@/shared/lib/format'
 import { CONTENT_SORTS } from '../types'
 import type { ContentSearch, ContentSort, ContentSummary } from '../types'
 
@@ -27,14 +27,17 @@ export function ContentTable({ rows, search = { orderBy: 'publishedAt', offset: 
       sortedBy={onSort ? search.orderBy : undefined}
       onSort={onSort && ((k) => onSort(k as ContentSort))}
       columns={[
-        { key: 'platform', label: 'Platform', render: (r) => <PlatformBadge platform={r.platform} /> },
         {
           key: 'title',
           label: 'Post',
           render: (r) => (
-            <Link to="/content/$id" params={{ id: String(r.contentId) }} className="block max-w-[24rem] truncate hover:underline" dir="auto">
-              {r.title ?? 'Untitled'}
-            </Link>
+            <span className="flex max-w-lg items-center gap-3" title={PLATFORM_LABEL[r.platform]}>
+              <PlatformTile platform={r.platform} />
+              <span className="sr-only">{PLATFORM_LABEL[r.platform]}:</span>
+              <Link to="/content/$id" params={{ id: String(r.contentId) }} className="min-w-0 truncate hover:underline" dir="auto">
+                {r.title ?? 'Untitled'}
+              </Link>
+            </span>
           ),
         },
         { key: 'contentType', label: 'Type', render: (r) => humanize(r.contentType) },

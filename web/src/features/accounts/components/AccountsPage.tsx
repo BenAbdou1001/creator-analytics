@@ -20,8 +20,9 @@ export function AccountsPage() {
 
   return (
     <>
-      <PageHeader title="Accounts" />
+      <PageHeader title="Accounts" description="Every post, value and import you save belongs to one of these" />
       <AccountForm
+        title={editing === null ? 'Add an account' : `Editing @${data.rows.find((a) => a.accountId === editing)?.handle ?? form.handle}`}
         value={form}
         onChange={setForm}
         editing={editing !== null}
