@@ -6,7 +6,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node src/features/content/lib/what-worked.check.mjs && node src/features/content/lib/experiments.check.mjs && node src/shared/lib/row-form.check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/noto-sans-arabic": "^5.3.0",

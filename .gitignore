@@ -11,3 +11,5 @@ dist/
 unslop/
 .DS_Store
 .claude/
+# local agent plans
+.hermes/

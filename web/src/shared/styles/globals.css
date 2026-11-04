@@ -5,7 +5,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Dark is the default. Components use these role names, never hex values. See docs/brand/GUIDE.md. */
+/* Dark is the default. Components use these role names, never hex values. */
 :root {
   --background: #f4f4f5;
   --panel: #fafafa;

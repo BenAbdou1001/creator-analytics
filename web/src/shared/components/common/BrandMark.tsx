@@ -1,4 +1,4 @@
-/** The product mark: one white stroke writing C then A, on a violet tile. Source: docs/brand/logo/master/symbol-reversed.svg */
+/** The product mark: one white stroke writing C then A, on a violet tile. Shape matches assets/logo/symbol.svg */
 export function BrandMark({ className = 'size-11' }: { className?: string }) {
   return (
     <svg viewBox="0 0 256 256" className={className} aria-hidden="true">

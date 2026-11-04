@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in the web app, REST API or MCP server does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please strip personal data (handles, follower lists, revenue) from anything you paste or attach.
+        Security problems go through private reporting instead, see SECURITY.md.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Web app
+        - REST API
+        - MCP server
+        - Import (CSV / LinkedIn .xlsx)
+        - Database / migrations
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Include the exact error message or a screenshot if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Import a YouTube Content export with ...
+        2. Open Posts
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Social platform involved, if any
+      placeholder: YouTube, TikTok, Instagram, LinkedIn
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Commit or version, OS, Python, Node and Postgres versions, and the MCP client if relevant.
+      placeholder: |
+        Commit: c53041d
+        OS: macOS 15
+        Python 3.13, Node 22.18, Postgres 17
+        MCP client: Claude Code
