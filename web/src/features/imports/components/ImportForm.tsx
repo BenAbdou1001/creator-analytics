@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { accountLabel } from '@/features/accounts'
 import type { Account } from '@/features/accounts'
 import { ErrorText } from '@/shared/components/common/ErrorText'
+import { Disclosure } from '@/shared/components/common/Disclosure'
 import { Field, FormActions, FormGrid } from '@/shared/components/common/Field'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
@@ -83,8 +84,7 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
           />
         </label>
 
-        <details className="text-sm">
-          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">File options</summary>
+        <Disclosure label="File options">
           <FormGrid className="mt-3">
             <Field label="Read this file as">
               <Select className="w-full" value={kind} onValueChange={(v) => setKind(v as ImportKind)} options={[['auto', 'Detect it'], ['content', 'One row per post'], ['account_metrics', 'One row per date']]} />
@@ -96,7 +96,7 @@ export function ImportForm({ accounts, accountId, onAccount }: { accounts: Accou
               <Select className="w-full" value={periodKind} onValueChange={(v) => setPeriodKind(v)} options={humanOptions(['day', 'week', 'month', 'year'])} />
             </Field>
           </FormGrid>
-        </details>
+        </Disclosure>
 
         <ErrorText error={preview.error ?? upload.error} />
         {preview.isPending && <p className="text-sm text-muted-foreground">Reading {file?.name}</p>}

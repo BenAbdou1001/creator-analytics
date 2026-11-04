@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { PlatformTile } from '@/shared/components/common/PlatformBadge'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
@@ -7,7 +8,7 @@ import { cn } from '@/shared/lib/utils'
 import type { ExpiringMetric } from '../types'
 
 const URGENT_DAYS = 30
-const SHOWN = 5
+const SHOWN = 6
 
 const saved = (m: ExpiringMetric) =>
   m.savedAs === 'days' ? `Saved to ${prettyDay(m.lastDay)}` : m.savedAs === 'totals' ? 'Saved as totals only' : 'Never saved'
@@ -43,6 +44,7 @@ export function ExpiryPanel({ metrics }: { metrics: ExpiringMetric[] }) {
   const daily = metrics.filter((m) => m.savedAs === 'days')
   const gaps = metrics.filter((m) => m.savedAs !== 'days')
   const urgent = (daily[0]?.daysLeft ?? Infinity) <= URGENT_DAYS
+  const platforms = [...new Set(metrics.map((m) => m.platform))]
   return (
     <Card className="min-w-0 gap-2 p-5">
       <div className="flex items-center justify-between gap-3">
@@ -59,16 +61,12 @@ export function ExpiryPanel({ metrics }: { metrics: ExpiringMetric[] }) {
             ))}
           </ul>
           {daily.length + gaps.length > SHOWN && (
-            <details className="text-sm">
-              <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                {daily.length + gaps.length - SHOWN} more metrics
-              </summary>
-              <ul className="divide-y">
-                {[...daily, ...gaps].slice(SHOWN).map((m) => (
-                  <Row key={`${m.accountId}-${m.metricKey}`} metric={m} />
-                ))}
-              </ul>
-            </details>
+            <Button asChild size="sm" variant="ghost" className="-ml-3 w-fit text-muted-foreground">
+              <Link to="/metrics" search={platforms.length === 1 ? { platform: platforms[0] } : {}}>
+                See all {daily.length + gaps.length} metrics
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
           )}
         </>
       ) : (
