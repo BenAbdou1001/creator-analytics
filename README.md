@@ -1,11 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/logo/horizontal-reversed.svg">
-  <img src="assets/logo/horizontal.svg" alt="Creator Analytics" width="360">
-</picture>
-
-### Your social media analytics, kept in your own database before the platforms delete them.
+<img src="assets/banner.png" alt="Creator Analytics: keep your creator analytics before the platforms delete them" width="100%">
 
 [![CI](https://github.com/BenAbdou1001/creator-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/BenAbdou1001/creator-analytics/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6556FB.svg)](LICENSE)
